@@ -7,3 +7,12 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Cloud Agent development
+
+- Install: `npm ci` (idempotent; uses `package-lock.json`).
+- Dev server: `npm run dev` → http://127.0.0.1:3000 (started via `.cursor/environment.json` terminals).
+- One-click demo (no Supabase): open `/demo` or POST `/api/demo/launch`, then tour Brain → Ingestion → Graph → Skills → Simulator.
+- Demo credentials: `investor@demo.tactix.ai` / `demo1234`.
+- Production build: `npm run build` then `npm run start`.
+- Real auth requires Supabase env vars per `.env.example` and SQL in `supabase/`.
