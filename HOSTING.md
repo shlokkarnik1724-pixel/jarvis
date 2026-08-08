@@ -23,7 +23,7 @@ Vercel → **Settings** → **Environment Variables** (Production):
 | `NEXT_PUBLIC_SITE_URL` | `https://jarvis-shlokkarnik1724-5935s-projects.vercel.app` |
 | `NEXT_PUBLIC_APP_URL` | same as SITE_URL |
 
-Then **Deployments → … → Redeploy**.
+Then **Deployments → … → Redeploy** (required — `NEXT_PUBLIC_*` vars only apply after a new build).
 
 In Supabase SQL editor run:
 1. `supabase/schema.sql`
