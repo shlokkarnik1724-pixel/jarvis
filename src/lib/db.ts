@@ -11,12 +11,31 @@ const emptyDb = (): Database => ({
   organizations: [],
   memberships: [],
   dataSources: [],
+  connectors: [],
   conversations: [],
   skills: [],
   skillVersions: [],
   agentTestRuns: [],
   activities: [],
+  routingItems: [],
+  brainMessages: [],
 });
+
+function migrate(db: Database): Database {
+  if (!db.connectors) db.connectors = [];
+  if (!db.dataSources) db.dataSources = [];
+  if (!db.routingItems) db.routingItems = [];
+  if (!db.brainMessages) db.brainMessages = [];
+  // Mirror legacy dataSources into connectors if needed
+  if (db.connectors.length === 0 && db.dataSources.length > 0) {
+    db.connectors = db.dataSources.map((d) => ({
+      ...d,
+      provider: d.provider || "manual",
+      name: d.name,
+    }));
+  }
+  return db;
+}
 
 let writeQueue: Promise<void> = Promise.resolve();
 
@@ -32,7 +51,7 @@ async function ensureDb(): Promise<void> {
 export async function readDb(): Promise<Database> {
   await ensureDb();
   const raw = await fs.readFile(DB_PATH, "utf8");
-  return JSON.parse(raw) as Database;
+  return migrate(JSON.parse(raw) as Database);
 }
 
 export async function writeDb(db: Database): Promise<void> {

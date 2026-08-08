@@ -14,16 +14,20 @@ import {
   LogOut,
   Menu,
   X,
+  Brain,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui";
 
 const nav = [
+  { href: "/brain", label: "Company Brain", icon: Brain },
+  { href: "/inbox", label: "Routing Inbox", icon: Inbox },
+  { href: "/connectors", label: "Connectors", icon: Cable },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/skills", label: "Skill Library", icon: Library },
   { href: "/extract", label: "Extract Skill", icon: Sparkles },
-  { href: "/simulator", label: "Simulator", icon: FlaskConical },
-  { href: "/sources", label: "Data Sources", icon: Cable },
+  { href: "/simulator", label: "Agent Test", icon: FlaskConical },
   { href: "/settings", label: "Team & Settings", icon: Settings },
   { href: "/billing", label: "Billing", icon: CreditCard },
 ];
@@ -83,14 +87,15 @@ export function AppSidebar({
     <>
       <aside className="hidden md:flex h-full w-64 flex-col border-r border-[var(--line)] bg-white/80 backdrop-blur">
         <div className="px-5 py-5 border-b border-[var(--line)]">
-          <Link href="/dashboard" className="font-display text-xl tracking-tight">
+          <Link href="/brain" className="font-display text-xl tracking-tight">
             Tactix <span className="text-[var(--accent)]">AI</span>
           </Link>
           <p className="mt-2 text-xs text-[var(--ink-muted)] truncate">
             {orgName}
           </p>
+          <p className="text-[10px] text-[var(--accent)] mt-1">Company brain</p>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           <NavLinks pathname={pathname} />
         </nav>
         <div className="border-t border-[var(--line)] p-4">
@@ -126,9 +131,12 @@ export function AppSidebar({
       </div>
 
       {open && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/30" onClick={() => setOpen(false)}>
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/30"
+          onClick={() => setOpen(false)}
+        >
           <div
-            className="absolute right-0 top-0 h-full w-72 bg-white p-4 shadow-xl"
+            className="absolute right-0 top-0 h-full w-72 bg-white p-4 shadow-xl overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <nav className="space-y-1 mt-2">

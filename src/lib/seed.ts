@@ -1,14 +1,16 @@
 import type {
   ActivityItem,
+  Connector,
   Conversation,
-  DataSource,
   Membership,
   Organization,
+  RoutingItem,
   Skill,
   SkillVersion,
   User,
 } from "./types";
 import { id, now } from "./db";
+import { CONNECTOR_CATALOG } from "./config";
 
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString();
@@ -33,6 +35,11 @@ Sam: Escalating now and sending the status note.`,
   incident: `DevOps Bot: SEV-2 declared — payments latency > 3s in us-east.
 Casey (SRE): Runbook: flip traffic to us-west standby, page payments owner, post status every 10 minutes until green.
 Morgan: Following that — standby cutover started.`,
+
+  zoom: `[Zoom transcript · QBR]
+CEO: We need a single place that knows our discount rules, escalations, and refund exceptions.
+COO: Right now that lives in Slack, Teams, Zoho tickets, and a Sheet called Policy Matrix.
+Head of Support: If the brain can route VIP issues to Riley automatically, we save hours.`,
 };
 
 export function buildDemoSeed(userId: string) {
@@ -56,57 +63,36 @@ export function buildDemoSeed(userId: string) {
     createdAt,
   };
 
-  const dataSources: DataSource[] = [
-    {
-      id: id("ds"),
-      organizationId: org.id,
-      type: "manual",
-      name: "Paste Conversation",
-      status: "connected",
-      createdAt,
-    },
-    {
-      id: id("ds"),
-      organizationId: org.id,
-      type: "slack",
-      name: "Slack · #support-escalations",
-      status: "connected",
-      createdAt,
-    },
-    {
-      id: id("ds"),
-      organizationId: org.id,
-      type: "zendesk",
-      name: "Zendesk",
-      status: "coming_soon",
-      createdAt,
-    },
-    {
-      id: id("ds"),
-      organizationId: org.id,
-      type: "email",
-      name: "Gmail / Outlook",
-      status: "coming_soon",
-      createdAt,
-    },
-    {
-      id: id("ds"),
-      organizationId: org.id,
-      type: "fireflies",
-      name: "Fireflies / Gong",
-      status: "coming_soon",
-      createdAt,
-    },
-  ];
+  const connectedProviders = new Set([
+    "slack",
+    "microsoft_teams",
+    "google_sheets",
+    "zoom",
+    "zoho",
+    "manual",
+  ]);
 
-  const slackDs = dataSources[1].id;
-  const manualDs = dataSources[0].id;
+  const connectors: Connector[] = CONNECTOR_CATALOG.map((c) => ({
+    id: id("conn"),
+    organizationId: org.id,
+    provider: c.provider,
+    name: c.name,
+    status: connectedProviders.has(c.provider) ? "connected" : "disconnected",
+    lastSyncedAt: connectedProviders.has(c.provider) ? minutesAgo(20) : null,
+    meta: { blurb: c.blurb, category: c.category },
+    createdAt,
+  }));
+
+  const byProvider = Object.fromEntries(
+    connectors.map((c) => [c.provider, c.id])
+  );
 
   const conversations: Conversation[] = [
     {
       id: id("conv"),
       organizationId: org.id,
-      dataSourceId: slackDs,
+      dataSourceId: byProvider.slack,
+      connectorId: byProvider.slack,
       rawText: THREADS.discount,
       sourceRef: "Slack #sales-questions",
       createdAt: minutesAgo(120),
@@ -114,7 +100,8 @@ export function buildDemoSeed(userId: string) {
     {
       id: id("conv"),
       organizationId: org.id,
-      dataSourceId: slackDs,
+      dataSourceId: byProvider.slack,
+      connectorId: byProvider.slack,
       rawText: THREADS.refund,
       sourceRef: "Slack #support-escalations",
       createdAt: minutesAgo(85),
@@ -122,18 +109,29 @@ export function buildDemoSeed(userId: string) {
     {
       id: id("conv"),
       organizationId: org.id,
-      dataSourceId: slackDs,
+      dataSourceId: byProvider.microsoft_teams,
+      connectorId: byProvider.microsoft_teams,
       rawText: THREADS.escalate,
-      sourceRef: "Slack #vip-support",
+      sourceRef: "Teams · VIP Support",
       createdAt: minutesAgo(40),
     },
     {
       id: id("conv"),
       organizationId: org.id,
-      dataSourceId: manualDs,
+      dataSourceId: byProvider.zoho,
+      connectorId: byProvider.zoho,
       rawText: THREADS.incident,
-      sourceRef: "Incident channel · SEV-2",
+      sourceRef: "Zoho Desk · SEV-2",
       createdAt: minutesAgo(18),
+    },
+    {
+      id: id("conv"),
+      organizationId: org.id,
+      dataSourceId: byProvider.zoom,
+      connectorId: byProvider.zoom,
+      rawText: THREADS.zoom,
+      sourceRef: "Zoom · QBR transcript",
+      createdAt: minutesAgo(10),
     },
   ];
 
@@ -192,7 +190,7 @@ export function buildDemoSeed(userId: string) {
         category: "Escalation" as const,
         confidence: 0.84,
         source_excerpt:
-          "Riley (On-call): Yes — any VIP or Enterprise with a blocking issue escalates to on-call immediately. First customer update within 15 minutes.",
+          "Riley (On-call): Yes — any VIP or Enterprise with a blocking issue escalates to on-call immediately.",
         flagged_fields: [],
       },
       updatedAt: minutesAgo(35),
@@ -246,63 +244,92 @@ export function buildDemoSeed(userId: string) {
     });
   }
 
+  const routingItems: RoutingItem[] = [
+    {
+      id: id("rte"),
+      organizationId: org.id,
+      title: "VIP checkout outage — NovaCorp",
+      summary:
+        "Blocking production issue from Teams VIP Support. Brain suggests escalate to Riley (on-call) within 15 min.",
+      suggestedOwner: "Riley · On-call",
+      channel: "Microsoft Teams",
+      priority: "urgent",
+      status: "open",
+      sourceRef: "Teams · VIP Support",
+      createdAt: minutesAgo(25),
+    },
+    {
+      id: id("rte"),
+      organizationId: org.id,
+      title: "Enterprise refund exception request",
+      summary:
+        "Zoho ticket matches approved P1 refund skill. Route to Priya (Support) + CC Finance.",
+      suggestedOwner: "Priya · Support",
+      channel: "Zoho",
+      priority: "high",
+      status: "open",
+      sourceRef: "Zoho Desk #4821",
+      createdAt: minutesAgo(55),
+    },
+    {
+      id: id("rte"),
+      organizationId: org.id,
+      title: "Discount approval for Acme deal",
+      summary:
+        "15% Enterprise discount is within approved skill — AE can proceed without manager.",
+      suggestedOwner: "Alex · AE",
+      channel: "Slack",
+      priority: "normal",
+      status: "routed",
+      sourceRef: "Slack #sales-questions",
+      createdAt: minutesAgo(100),
+    },
+  ];
+
   const activities: ActivityItem[] = [
     {
       id: id("act"),
       organizationId: org.id,
-      message: `Workspace "${org.name}" ready for investor walkthrough`,
+      message: "Company brain online — Slack, Teams, Zoho, Sheets, Zoom connected",
       createdAt: minutesAgo(125),
     },
     {
       id: id("act"),
       organizationId: org.id,
       message:
-        'New skill extracted: "Enterprise Tier Discount Exception" from Slack #sales-questions',
-      createdAt: minutesAgo(118),
-    },
-    {
-      id: id("act"),
-      organizationId: org.id,
-      message: 'Skill approved: "Enterprise Tier Discount Exception" (v1)',
+        'Skill approved: "Enterprise Tier Discount Exception" from Slack #sales-questions',
       createdAt: minutesAgo(110),
     },
     {
       id: id("act"),
       organizationId: org.id,
-      message:
-        'New skill extracted: "Enterprise P1 Outage Refund Exception" from Slack #support-escalations',
-      createdAt: minutesAgo(82),
+      message: "Routed VIP checkout issue → Riley (on-call) via Teams",
+      createdAt: minutesAgo(25),
     },
     {
       id: id("act"),
       organizationId: org.id,
-      message: 'Skill approved: "Enterprise P1 Outage Refund Exception" (v1)',
-      createdAt: minutesAgo(70),
+      message: "Ingested Zoom QBR transcript — 3 decision candidates flagged",
+      createdAt: minutesAgo(10),
     },
     {
       id: id("act"),
       organizationId: org.id,
-      message:
-        'New skill extracted from Slack thread #vip-support — pending review',
-      createdAt: minutesAgo(38),
-    },
-    {
-      id: id("act"),
-      organizationId: org.id,
-      message:
-        'New skill extracted: "Payments Latency SEV-2 Cutover" — 2 flagged fields',
-      createdAt: minutesAgo(15),
+      message: "Google Sheets · Policy Matrix synced (read-only)",
+      createdAt: minutesAgo(20),
     },
   ];
 
   return {
     org,
     membership,
-    dataSources,
+    connectors,
+    dataSources: connectors,
     conversations,
     skills,
     skillVersions,
     activities,
+    routingItems,
     threads: THREADS,
   };
 }

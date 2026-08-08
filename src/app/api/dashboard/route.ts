@@ -12,6 +12,9 @@ export async function GET() {
     const sources = db.dataSources.filter(
       (d) => d.organizationId === orgId && d.status === "connected"
     );
+    const connectors = (db.connectors || []).filter(
+      (d) => d.organizationId === orgId && d.status === "connected"
+    );
     const activities = db.activities
       .filter((a) => a.organizationId === orgId)
       .sort(
@@ -41,12 +44,19 @@ export async function GET() {
         pending: skills.filter((s) => s.status === "pending").length,
         approved: skills.filter((s) => s.status === "approved").length,
         rejected: skills.filter((s) => s.status === "rejected").length,
-        dataSources: sources.length,
+        dataSources: Math.max(sources.length, connectors.length),
+        connectors: connectors.length,
       },
       activities,
       members,
       dataSources: db.dataSources.filter((d) => d.organizationId === orgId),
+      connectors: (db.connectors || []).filter(
+        (d) => d.organizationId === orgId
+      ),
       organization: org,
+      routingOpen: (db.routingItems || []).filter(
+        (r) => r.organizationId === orgId && r.status === "open"
+      ).length,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed";

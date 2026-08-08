@@ -31,7 +31,7 @@ export default function OnboardingPage() {
       setError(data.error || "Could not create workspace");
       return;
     }
-    router.push("/sources");
+    router.push("/brain");
     router.refresh();
   }
 
@@ -51,7 +51,7 @@ export default function OnboardingPage() {
       setError(data.error || "Could not join workspace");
       return;
     }
-    router.push("/dashboard");
+    router.push("/brain");
     router.refresh();
   }
 

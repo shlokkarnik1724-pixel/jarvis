@@ -3,19 +3,23 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Play, Sparkles, Brain } from "lucide-react";
 
-const SAMPLE_SLACK = `Alex (AE): Enterprise prospect wants 20% off to close this quarter.
-Jordan (Manager): Cap at 15% for Enterprise — no manager sign-off needed under that. Above 15% escalate to me.
-Alex: Got it — locking 15% for Acme.`;
+const SAMPLE_SLACK = `Slack · Teams · Zoho · Zoom · Sheets
+— decisions scattered across every tool —
+
+Alex: Can I give Acme 15%?
+Jordan: Enterprise cap is 15% without me.
+Riley: VIP outages escalate to on-call in 15m.`;
 
 const SAMPLE_SKILL = `{
-  "title": "Enterprise Tier Discount Exception",
-  "condition": "Customer Tier = Enterprise",
-  "action": "Permit up to 15% discount without manager sign-off",
-  "category": "Discounting",
-  "confidence": 0.91,
-  "source_excerpt": "Cap at 15% for Enterprise — no manager sign-off needed"
+  "brain": "Acme company operating system",
+  "skills": [
+    "Enterprise 15% discount exception",
+    "VIP escalation → Riley",
+    "P1 refund exception"
+  ],
+  "routes_to": "the right owner automatically"
 }`;
 
 export default function LandingPage() {
@@ -34,7 +38,7 @@ export default function LandingPage() {
         setLoadingDemo(false);
         return;
       }
-      router.push("/dashboard");
+      router.push("/brain");
       router.refresh();
     } catch {
       setError("Network error launching demo");
@@ -50,10 +54,10 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/convert"
+            href="/setup"
             className="hidden sm:inline text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
           >
-            Free converter
+            Connect Supabase
           </Link>
           <Link
             href="/login"
@@ -81,11 +85,12 @@ export default function LandingPage() {
             Tactix AI
           </p>
           <h1 className="mt-4 max-w-2xl text-xl sm:text-2xl text-[var(--ink)]/90 animate-fade-up-delay font-medium">
-            The Living Operating System for Enterprise AI Agents
+            The company brain for Slack, Teams, Zoho, Sheets, Zoom & more
           </h1>
           <p className="mt-4 max-w-xl text-[var(--ink-muted)] text-base sm:text-lg animate-fade-up-delay">
-            Turn messy Slack and support threads into versioned decision skills —
-            then run agents that cite the exact approved rule.
+            One living operating system that arranges decisions, answers
+            questions, and routes work to the right person — across every tool
+            your company already uses.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 animate-fade-up-delay-2">
             <button
@@ -95,55 +100,53 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
             >
               <Play size={16} />
-              {loadingDemo ? "Opening demo…" : "Launch live demo"}
+              {loadingDemo ? "Opening brain…" : "Launch company brain demo"}
             </button>
             <Link
-              href="/convert"
+              href="/login"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white/70 px-5 py-3 text-sm font-medium backdrop-blur hover:bg-white"
             >
-              <Sparkles size={16} /> Try free converter
+              <Brain size={16} /> Sign in (Google / email)
             </Link>
             <Link
-              href="/signup"
+              href="/convert"
               className="inline-flex items-center gap-2 rounded-md px-5 py-3 text-sm font-medium text-[var(--accent-deep)] hover:underline"
             >
-              Start Free <ArrowRight size={16} />
+              <Sparkles size={16} /> Free converter <ArrowRight size={16} />
             </Link>
           </div>
           {error && (
             <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
           )}
-          <p className="mt-4 text-xs text-[var(--ink-muted)]">
-            Demo opens a seeded Acme workspace with approved skills, pending
-            review queue, and a working agent simulator — no signup required.
-          </p>
         </div>
       </section>
 
-      <section id="pipeline" className="atmosphere py-20 px-6">
+      <section className="atmosphere py-20 px-6">
         <div className="mx-auto max-w-6xl">
           <h2 className="font-display text-3xl tracking-tight">
-            Mine → Extract → Deploy
+            One brain. Every system.
           </h2>
-          <p className="mt-2 text-[var(--ink-muted)] max-w-xl">
-            One pipeline from how your team already decides to how agents act.
+          <p className="mt-2 text-[var(--ink-muted)] max-w-2xl">
+            Connectors for Slack, Microsoft Teams, Google Chat, Gmail, Outlook,
+            Zoho, Zendesk, Google Sheets, Zoom, Fireflies — plus universal paste
+            / upload.
           </p>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {[
               {
                 step: "01",
-                title: "Mine",
-                body: "Paste Slack, email, or ticket threads where decisions actually happen.",
+                title: "Ingest",
+                body: "Pull decisions from chat, tickets, sheets, and meeting transcripts.",
               },
               {
                 step: "02",
-                title: "Extract",
-                body: "LLMs draft structured Skill Specs with confidence and missing-field flags.",
+                title: "Arrange",
+                body: "AI extracts skills, flags conflicts, and keeps a versioned company memory.",
               },
               {
                 step: "03",
-                title: "Deploy",
-                body: "Approve with human governance, simulate, then export to LangChain / CrewAI.",
+                title: "Act",
+                body: "Answer questions, route to the right owner, deploy to agents.",
               },
             ].map((item) => (
               <div key={item.step} className="border-t border-[var(--line)] pt-5">
@@ -163,11 +166,8 @@ export default function LandingPage() {
       <section className="py-20 px-6 bg-white border-y border-[var(--line)]">
         <div className="mx-auto max-w-6xl">
           <h2 className="font-display text-3xl tracking-tight">
-            Before / after
+            Scattered tools → company brain
           </h2>
-          <p className="mt-2 text-[var(--ink-muted)]">
-            Raw conversation in. Executable skill out.
-          </p>
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <pre className="overflow-auto rounded-md bg-[var(--ink)] p-5 text-sm text-[#d7e8e4] leading-relaxed whitespace-pre-wrap">
               {SAMPLE_SLACK}
@@ -180,36 +180,28 @@ export default function LandingPage() {
       </section>
 
       <section className="py-16 px-6 atmosphere">
-        <div className="mx-auto max-w-6xl">
-          <p className="text-sm text-[var(--ink-muted)] mb-6">Works with</p>
-          <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-medium text-[var(--ink)]/70">
-            {["Slack", "Zendesk", "Gmail", "LangChain", "CrewAI"].map((name) => (
-              <span key={name}>{name}</span>
-            ))}
-          </div>
-          <div className="mt-12 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={launchDemo}
-              disabled={loadingDemo}
-              className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--accent-deep)] disabled:opacity-60"
-            >
-              <Play size={16} /> Launch live demo
-            </button>
-            <Link
-              href="/convert"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white px-5 py-3 text-sm font-medium"
-            >
-              Free Slack-to-Skill converter
-            </Link>
-          </div>
+        <div className="mx-auto max-w-6xl flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={launchDemo}
+            disabled={loadingDemo}
+            className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--accent-deep)] disabled:opacity-60"
+          >
+            <Play size={16} /> Launch demo
+          </button>
+          <Link
+            href="/setup"
+            className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white px-5 py-3 text-sm font-medium"
+          >
+            Connect Supabase + Google Auth
+          </Link>
         </div>
       </section>
 
       <footer className="px-6 py-8 text-sm text-[var(--ink-muted)] border-t border-[var(--line)]">
         <div className="mx-auto max-w-6xl flex flex-wrap justify-between gap-3">
           <span className="font-display text-[var(--ink)]">Tactix AI</span>
-          <span>Company brain for AI agents · Investor MVP</span>
+          <span>The living operating system for your company</span>
         </div>
       </footer>
     </div>

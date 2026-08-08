@@ -1,80 +1,55 @@
-# Tactix AI — Investor MVP
+# Tactix AI — Company Brain MVP
 
-**The Living Operating System for Enterprise AI Agents**
+The living operating system for enterprise teams: connect **Slack, Microsoft Teams, Google, Zoho, Sheets, Zoom** (and more), then let AI arrange decisions, answer questions, and route work to the right person.
 
-Turn Slack / support / email threads into versioned, approved decision skills — then simulate agents that cite the exact rule and source conversation.
+## What this MVP is
 
----
-
-## 60-second start (for investors / reviewers)
-
-```bash
-npm install
-npm run dev
-```
-
-Open **http://localhost:3000** and click **Launch live demo**.
-
-That opens a seeded **Acme Inc** workspace with:
-- 2 approved skills + 2 pending reviews
-- Live activity feed
-- Working extract → review → simulator loop
-- JSON / YAML / system-prompt export
-
-No OpenAI key required (demo extraction engine is built in).  
-Optional: set `OPENAI_API_KEY` in `.env.local` for live LLM calls.
-
-Demo login (also created by Launch live demo):
-- Email: `investor@demo.tactix.ai`
-- Password: `demo1234`
-
----
-
-## What you can demo
-
-| Feature | Where |
+| Layer | What you get |
 |---|---|
-| One-click seeded product tour | Landing → **Launch live demo** |
-| Free Slack-to-Skill converter (lead magnet) | `/convert` — no account |
-| Paste / upload conversation → extract skill | `/extract`, `/sources` |
-| Split-view review + approve/reject + versioning | `/skills/[id]` |
-| Conflict flags + confidence + missing fields | Skill review |
-| Agent simulator with citations | `/simulator` |
-| Export JSON / YAML / system prompt | Skill review + converter |
-| Multi-tenant workspaces + invite codes | Onboarding + Settings |
-| Pricing tiers | `/billing` |
+| **Auth** | Supabase Auth — email/password + **Continue with Google** |
+| **Data** | Supabase Postgres + RLS by `organization_id` (`supabase/schema.sql`) |
+| **Brain** | Ask the company brain across approved skills + sources |
+| **Connectors** | Slack, Teams, Google Chat, Gmail, Outlook, Zoho, Zendesk, Sheets, Zoom, Fireflies, paste/upload |
+| **Inbox** | AI routing — deliver info to the right owner |
+| **Skills** | Extract → review → approve → export JSON/YAML/system prompt |
+| **Agents** | Simulator that cites approved skills |
 
----
+## 1) Connect Supabase (required for real login / Google)
 
-## Investor walkthrough script
-
-1. Open the app → **Launch live demo**
-2. Dashboard shows living stats + activity (not an empty state)
-3. Skill Library → open a **pending** skill → approve in split view
-4. Click **Run Test** → ask: *“Can I offer this enterprise client a 15% discount?”*
-5. Point at the citation footer (skill id, approval date, Slack source)
-6. Optional: Extract a fresh thread, or show `/convert` as the free PLG wedge
-
----
-
-## Share this repo
+1. Create a project at [supabase.com](https://supabase.com/dashboard)
+2. Copy URL + anon key into `.env.local` (see `.env.example`)
+3. Run `supabase/schema.sql` in the SQL Editor
+4. Auth → Providers → **Google** → enable (add Google Cloud OAuth client)
+5. Auth → URL Config → allow `http://localhost:3000/auth/callback`
+6. For fast demos: disable **Confirm email** under Email provider
 
 ```bash
-git clone <your-fork-or-this-repo>
-cd jarvis
-git checkout cursor/tactix-ai-mvp-fcc1
+cp .env.example .env.local
+# fill NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
 npm install
 npm run dev
 ```
 
-Or deploy to Vercel (Next.js) — no database provisioning required for the JSON-backed MVP store.
+Open http://localhost:3000/setup for the checklist, then http://localhost:3000/login → **Continue with Google**.
 
----
+## 2) Preview without Supabase (local demo)
 
-## Product thesis (from the blueprint)
+```bash
+npm install && npm run dev
+```
 
-Traditional RAG tells agents *what text exists*. Tactix extracts *how to decide*:
+Click **Launch company brain demo** — seeded Acme workspace with connectors, skills, routing inbox, and Ask Brain. Local JWT auth is used only when Supabase keys are missing.
 
-> IF Customer Tier = Enterprise → THEN permit up to 15% discount without manager sign-off
+## Investor walkthrough
 
-Human-in-the-loop approval + source traceability is the governance moat before any agent acts in production.
+1. Landing → Launch company brain demo  
+2. **Company Brain** — ask “What’s our Enterprise discount policy?”  
+3. **Connectors** — show Slack / Teams / Zoho / Sheets / Zoom connected  
+4. **Routing Inbox** — route a VIP issue to the right owner  
+5. **Extract / Skills** — paste a thread → approve → export  
+6. **Agent Test** — question cites the approved skill  
+7. For real auth: Connect Supabase + Google on `/setup`
+
+## Repo / PR
+
+Branch: `cursor/tactix-ai-mvp-fcc1`

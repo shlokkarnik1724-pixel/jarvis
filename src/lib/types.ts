@@ -2,9 +2,11 @@ export type Role = "admin" | "member";
 
 export type SkillStatus = "pending" | "approved" | "rejected";
 
-export type DataSourceType = "slack" | "zendesk" | "email" | "manual" | "fireflies";
-
-export type DataSourceStatus = "connected" | "coming_soon" | "disconnected";
+export type ConnectorStatus =
+  | "connected"
+  | "syncing"
+  | "disconnected"
+  | "coming_soon";
 
 export type SkillCategory =
   | "Refunds"
@@ -40,19 +42,25 @@ export interface Membership {
   createdAt: string;
 }
 
-export interface DataSource {
+export interface Connector {
   id: string;
   organizationId: string;
-  type: DataSourceType;
+  provider: string;
   name: string;
-  status: DataSourceStatus;
+  status: ConnectorStatus;
+  meta?: Record<string, unknown>;
+  lastSyncedAt?: string | null;
   createdAt: string;
 }
+
+/** @deprecated use Connector */
+export type DataSource = Connector & { type?: string };
 
 export interface Conversation {
   id: string;
   organizationId: string;
   dataSourceId: string;
+  connectorId?: string;
   rawText: string;
   sourceRef: string;
   createdAt: string;
@@ -105,16 +113,42 @@ export interface ActivityItem {
   createdAt: string;
 }
 
+export interface RoutingItem {
+  id: string;
+  organizationId: string;
+  title: string;
+  summary: string;
+  suggestedOwner: string;
+  channel: string;
+  priority: "low" | "normal" | "high" | "urgent";
+  status: "open" | "routed" | "done";
+  sourceRef: string;
+  createdAt: string;
+}
+
+export interface BrainMessage {
+  id: string;
+  organizationId: string;
+  userId?: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  citations: { skillId?: string; title: string; sourceRef?: string }[];
+  createdAt: string;
+}
+
 export interface Database {
   users: User[];
   organizations: Organization[];
   memberships: Membership[];
-  dataSources: DataSource[];
+  dataSources: Connector[];
+  connectors: Connector[];
   conversations: Conversation[];
   skills: Skill[];
   skillVersions: SkillVersion[];
   agentTestRuns: AgentTestRun[];
   activities: ActivityItem[];
+  routingItems: RoutingItem[];
+  brainMessages: BrainMessage[];
 }
 
 export interface SessionPayload {

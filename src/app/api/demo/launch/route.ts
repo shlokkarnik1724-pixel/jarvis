@@ -12,7 +12,6 @@ import {
   ensureDemoUserShape,
 } from "@/lib/seed";
 
-/** One-click investor demo — resets/ensures a seeded Acme workspace. */
 export async function POST() {
   try {
     const passwordHash = await hashPassword(DEMO_PASSWORD);
@@ -27,13 +26,15 @@ export async function POST() {
         user.name = "Investor Demo";
       }
 
-      // Remove prior demo memberships/orgs owned by this user so demo is fresh
       const oldMemberships = db.memberships.filter((m) => m.userId === user!.id);
       const oldOrgIds = new Set(oldMemberships.map((m) => m.organizationId));
 
       db.memberships = db.memberships.filter((m) => m.userId !== user!.id);
       db.organizations = db.organizations.filter((o) => !oldOrgIds.has(o.id));
       db.dataSources = db.dataSources.filter((d) => !oldOrgIds.has(d.organizationId));
+      db.connectors = (db.connectors || []).filter(
+        (d) => !oldOrgIds.has(d.organizationId)
+      );
       db.conversations = db.conversations.filter(
         (c) => !oldOrgIds.has(c.organizationId)
       );
@@ -45,15 +46,23 @@ export async function POST() {
       db.agentTestRuns = db.agentTestRuns.filter(
         (r) => !oldOrgIds.has(r.organizationId)
       );
+      db.routingItems = (db.routingItems || []).filter(
+        (r) => !oldOrgIds.has(r.organizationId)
+      );
+      db.brainMessages = (db.brainMessages || []).filter(
+        (r) => !oldOrgIds.has(r.organizationId)
+      );
 
       const seed = buildDemoSeed(user.id);
       db.organizations.push(seed.org);
       db.memberships.push(seed.membership);
-      db.dataSources.push(...seed.dataSources);
+      db.connectors.push(...seed.connectors);
+      db.dataSources.push(...seed.connectors);
       db.conversations.push(...seed.conversations);
       db.skills.push(...seed.skills);
       db.skillVersions.push(...seed.skillVersions);
       db.activities.push(...seed.activities);
+      db.routingItems.push(...seed.routingItems);
 
       return { user, org: seed.org };
     });

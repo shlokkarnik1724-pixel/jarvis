@@ -31,19 +31,21 @@ export async function POST(req: Request) {
 
     const result = await updateDb((db) => {
       const manualSource =
-        db.dataSources.find(
+        (db.connectors || db.dataSources).find(
           (d) =>
-            d.organizationId === session.organizationId && d.type === "manual"
+            d.organizationId === session.organizationId &&
+            d.provider === "manual"
         ) ||
         (() => {
           const ds = {
-            id: id("ds"),
+            id: id("conn"),
             organizationId: session.organizationId,
-            type: "manual" as const,
+            provider: "manual",
             name: "Paste Conversation",
             status: "connected" as const,
             createdAt: now(),
           };
+          db.connectors.push(ds);
           db.dataSources.push(ds);
           return ds;
         })();
@@ -52,6 +54,7 @@ export async function POST(req: Request) {
         id: id("conv"),
         organizationId: session.organizationId,
         dataSourceId: manualSource.id,
+        connectorId: manualSource.id,
         rawText: body.text,
         sourceRef: body.sourceRef?.trim() || "Manual paste",
         createdAt: now(),
