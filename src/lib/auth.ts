@@ -43,14 +43,34 @@ export async function verifySessionToken(
   }
 }
 
-export async function setSessionCookie(token: string): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, token, {
+export function sessionCookieOptions(token: string, secure?: boolean) {
+  return {
+    name: COOKIE_NAME,
+    value: token,
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    // Public tunnels (Cloudflare) are HTTPS even in next dev
+    secure:
+      typeof secure === "boolean"
+        ? secure
+        : process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
+  };
+}
+
+export async function setSessionCookie(
+  token: string,
+  opts?: { secure?: boolean }
+): Promise<void> {
+  const cookieStore = await cookies();
+  const options = sessionCookieOptions(token, opts?.secure);
+  cookieStore.set(options.name, options.value, {
+    httpOnly: options.httpOnly,
+    sameSite: options.sameSite,
+    secure: options.secure,
+    path: options.path,
+    maxAge: options.maxAge,
   });
 }
 

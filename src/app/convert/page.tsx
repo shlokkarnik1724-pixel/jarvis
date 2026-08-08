@@ -204,9 +204,8 @@ export default function ConvertPage() {
                   <button
                     type="button"
                     className="text-[var(--accent)]"
-                    onClick={async () => {
-                      await fetch("/api/demo/launch", { method: "POST" });
-                      window.location.href = "/dashboard";
+                    onClick={() => {
+                      window.location.assign("/api/demo/launch");
                     }}
                   >
                     launch the live demo

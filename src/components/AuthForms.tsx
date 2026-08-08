@@ -243,11 +243,9 @@ function AuthForm({
         <button
           type="button"
           className="mt-4 w-full text-sm text-[var(--accent-deep)] font-medium hover:underline"
-          onClick={async () => {
+          onClick={() => {
             setLoading(true);
-            await fetch("/api/demo/launch", { method: "POST" });
-            router.push("/brain");
-            router.refresh();
+            window.location.assign("/api/demo/launch");
           }}
         >
           Preview without account (local demo workspace) →
