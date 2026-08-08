@@ -1,12 +1,16 @@
 import { DEMO_MODE } from "@/lib/config";
+import { listLeaderboard } from "@/lib/data/circle-queries";
 import { getDemoLeaderboard } from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 import { Badge } from "@/components/ui/badge";
 
 export default async function LeaderboardPage() {
   const session = await getSessionContext();
   if (!session) return null;
-  const rows = DEMO_MODE || session.demo ? getDemoLeaderboard() : [];
+  const rows =
+    DEMO_MODE || session.demo
+      ? getDemoLeaderboard()
+      : await listLeaderboard(requireCircleId(session));
 
   return (
     <div className="space-y-6">
@@ -19,7 +23,10 @@ export default async function LeaderboardPage() {
 
       <ol className="divide-y divide-[var(--line)]">
         {rows.map((row, index) => (
-          <li key={row.userId} className="flex flex-wrap items-center justify-between gap-4 py-5">
+          <li
+            key={row.userId}
+            className="flex flex-wrap items-center justify-between gap-4 py-5"
+          >
             <div className="flex items-center gap-4">
               <span className="font-display text-2xl text-[var(--accent-deep)]">
                 {index + 1}

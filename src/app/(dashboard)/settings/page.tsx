@@ -1,20 +1,25 @@
 import { MembersManager } from "@/components/settings/members-manager";
-import { DEMO_MODE } from "@/lib/config";
-import { getDemoMembers } from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
 import { Badge } from "@/components/ui/badge";
+import { DEMO_MODE } from "@/lib/config";
+import { listMembers } from "@/lib/data/circle-queries";
+import { getDemoMembers } from "@/lib/demo/store";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 
 export default async function SettingsPage() {
   const session = await getSessionContext();
   if (!session) return null;
-  const members = DEMO_MODE || session.demo ? getDemoMembers() : [];
+  const members =
+    DEMO_MODE || session.demo
+      ? getDemoMembers()
+      : await listMembers(requireCircleId(session));
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="font-display text-3xl">Settings</h1>
         <p className="mt-2 text-[var(--ink-muted)]">
-          Manage circle membership, roles, and nickname tagging.
+          Manage circle membership, roles, and nickname tagging. Share the invite
+          code with friends.
         </p>
       </div>
 
@@ -25,8 +30,10 @@ export default async function SettingsPage() {
         </p>
         {session.circle?.inviteCode ? (
           <p className="mt-3 text-sm">
-            Invite code:{" "}
-            <Badge className="ml-1 font-mono">{session.circle.inviteCode}</Badge>
+            Invite friends with code:{" "}
+            <Badge className="ml-1 font-mono text-base">
+              {session.circle.inviteCode}
+            </Badge>
           </p>
         ) : null}
       </section>

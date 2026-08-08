@@ -1,14 +1,20 @@
 import Link from "next/link";
-import { DEMO_MODE } from "@/lib/config";
-import { getDemoEvents } from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
-import { formatDate } from "@/lib/utils";
+import { CreateEventForm } from "@/components/events/create-event-form";
 import { Badge } from "@/components/ui/badge";
+import { DEMO_MODE } from "@/lib/config";
+import { listEvents } from "@/lib/data/circle-queries";
+import { getDemoEvents } from "@/lib/demo/store";
+import { getSessionContext, requireCircleId } from "@/lib/session";
+import { formatDate } from "@/lib/utils";
 
 export default async function EventsPage() {
   const session = await getSessionContext();
   if (!session) return null;
-  const events = DEMO_MODE || session.demo ? getDemoEvents() : [];
+
+  const events =
+    DEMO_MODE || session.demo
+      ? getDemoEvents()
+      : await listEvents(requireCircleId(session), session.user.id);
 
   return (
     <div className="space-y-6">
@@ -18,6 +24,9 @@ export default async function EventsPage() {
           Check in, claim shopping items, and keep the circle in sync.
         </p>
       </div>
+
+      <CreateEventForm enabled={!session.demo && !DEMO_MODE} />
+
       <ul className="divide-y divide-[var(--line)]">
         {events.map((event) => (
           <li key={event.id} className="py-5">

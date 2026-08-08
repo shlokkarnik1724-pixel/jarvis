@@ -10,6 +10,7 @@ const protectedPrefixes = [
   "/settings",
   "/fun",
   "/games",
+  "/onboarding",
 ];
 
 function needsAuth(pathname: string): boolean {
@@ -65,6 +66,7 @@ export const config = {
   matcher: [
     "/",
     "/login",
+    "/onboarding",
     "/dashboard/:path*",
     "/events/:path*",
     "/vault/:path*",

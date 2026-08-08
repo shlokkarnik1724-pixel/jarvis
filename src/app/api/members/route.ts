@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { DEMO_MODE } from "@/lib/config";
-import { getDemoMembers, updateDemoNickname } from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
+import {
+  getDemoMembers,
+  updateDemoNickname,
+} from "@/lib/demo/store";
+import { listMembers, updateNickname } from "@/lib/data/circle-queries";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 import { fail, ok } from "@/lib/utils";
 
 export async function GET() {
@@ -15,7 +19,7 @@ export async function GET() {
       return NextResponse.json(ok(getDemoMembers()));
     }
 
-    return NextResponse.json(ok([]));
+    return NextResponse.json(ok(await listMembers(requireCircleId(session))));
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Failed to load members"),
@@ -50,9 +54,13 @@ export async function POST(request: Request) {
       return NextResponse.json(ok(updated));
     }
 
-    return NextResponse.json(fail("Supabase member update not yet wired"), {
-      status: 501,
+    const updated = await updateNickname({
+      circleId: requireCircleId(session),
+      targetId: body.targetId,
+      editorId: session.user.id,
+      nickname: body.nickname.trim(),
     });
+    return NextResponse.json(ok(updated));
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Member update failed"),

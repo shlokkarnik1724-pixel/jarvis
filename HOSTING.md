@@ -1,47 +1,61 @@
-# Hosting Circle Web Portal
+# Make Circle a real shared app for friends
 
-## Live demo (this Cloud Agent session)
+This turns the demo into a multi-user product: Google or email login, create/join a circle, shared events/vault/tabs/games.
 
-**Public URL:** https://again-favors-charts-implied.trycloudflare.com
+## 1) Create a free Supabase project
 
-1. Open the link
-2. Click **Enter Circle (Demo)**
-3. Explore dashboard, vault, tabs, games
+1. Go to https://supabase.com → New project
+2. **Authentication → Providers**
+   - Enable **Email** (turn OFF “Confirm email” for fastest friend invites, or leave ON)
+   - Optionally enable **Google** (add Google Cloud OAuth client IDs)
+3. **SQL → New query** — run in order:
+   - `supabase/schema.sql`
+   - `supabase/schema_bootstrap.sql`
+4. **Storage** — confirm private bucket `vault` exists (created by schema)
 
-Backup tunnel (may show a password page — enter `16.58.190.11`):  
-https://wet-towns-juggle.loca.lt
+## 2) Copy keys into hosting (Vercel)
 
-> These tunnels stay live while this Cloud Agent run is active. For a permanent site, deploy below.
+In Supabase: **Project Settings → API** and **Database**
 
-## Deploy to your own hosting (recommended)
+| Env var | Where |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `anon` `public` key |
+| `SUPABASE_SERVICE_ROLE_KEY` | `service_role` key (keep secret) |
+| `DATABASE_URL` | Database → URI (use connection pooling URI if offered) |
+| `NEXT_PUBLIC_SITE_URL` | `https://YOUR-APP.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | same as above |
 
-### Option A — Vercel (fastest for Next.js)
+Also add the same redirect URL in Supabase Auth:
+`https://YOUR-APP.vercel.app/auth/callback`
 
-1. Merge/pull branch `cursor/circle-web-portal-scaffold-2391`
-2. Import the GitHub repo at https://vercel.com/new
-3. Leave build command as default (`prisma generate && next build` via `vercel.json`)
-4. Add env vars from `.env.example` (optional for demo mode — leave Supabase as placeholders to keep demo login)
-5. Deploy → you get a permanent `*.vercel.app` URL
+## 3) Deploy
 
-### Option B — Any Node host (Railway, Render, VPS)
+1. Merge PR branch `cursor/circle-web-portal-scaffold-2391`
+2. Import repo on https://vercel.com/new
+3. Paste env vars → Deploy
+
+## 4) Use it with friends
+
+1. You open the Vercel URL → **Create account** (email) or Google
+2. **Create a circle** on onboarding
+3. Open **Settings** → copy **invite code**
+4. Friend signs up → **Join with invite code**
+5. Shared events, vault uploads, tabs, games, roast/toast all persist in Supabase
+
+## 5) Local run with real auth
 
 ```bash
+cp .env.example .env.local
+# fill real Supabase keys
 npm install
-npm run build
-npm run start
+npm run dev
 ```
 
-Listens on `0.0.0.0:3000`. Set `PORT` if your host requires it.
+Demo mode only runs when Supabase URL still contains `YOUR_PROJECT`.
 
-### Option C — Cursor Desktop port forward
+## Auth options
 
-With the Cloud Agent connected in Cursor Desktop, open the plug icon (ports) and open forwarded **localhost:3000**.
-
-## Demo vs production auth
-
-| Mode | When | How to enter |
-|---|---|---|
-| Demo | Supabase URL still `YOUR_PROJECT` | **Enter Circle (Demo)** |
-| Google OAuth | Real Supabase keys + Google provider | Same button starts Google login |
-
-Run `supabase/schema.sql` and create a private Storage bucket named `vault` before enabling production auth.
+- **Email/password** — best for circulating with friends quickly
+- **Google OAuth** — enable in Supabase + Google Cloud console
+- **Preview demo** — local/demo only; not for real friend groups

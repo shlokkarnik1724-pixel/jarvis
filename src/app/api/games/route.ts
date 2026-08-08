@@ -6,8 +6,14 @@ import {
   getDemoGames,
   updateDemoGame,
 } from "@/lib/demo/store";
+import {
+  createGame,
+  getGame,
+  listGames,
+  updateGame,
+} from "@/lib/data/circle-queries";
 import { applyGameAction } from "@/lib/games/state-machine";
-import { getSessionContext } from "@/lib/session";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 import type { GameType } from "@/lib/types";
 import { fail, ok } from "@/lib/utils";
 
@@ -29,7 +35,7 @@ export async function GET() {
       return NextResponse.json(ok(getDemoGames()));
     }
 
-    return NextResponse.json(ok([]));
+    return NextResponse.json(ok(await listGames(requireCircleId(session))));
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Failed to list games"),
@@ -79,9 +85,32 @@ export async function POST(request: Request) {
       return NextResponse.json(fail("Invalid game request"), { status: 400 });
     }
 
-    return NextResponse.json(fail("Supabase game persistence not yet wired"), {
-      status: 501,
-    });
+    if (body.gameId && body.action) {
+      const existing = await getGame(body.gameId);
+      if (!existing) {
+        return NextResponse.json(fail("Game not found"), { status: 404 });
+      }
+      const nextState = applyGameAction(
+        existing.gameType,
+        existing.state,
+        body.action
+      );
+      const status =
+        typeof nextState.phase === "string" && nextState.phase === "ended"
+          ? "completed"
+          : existing.status === "lobby" && body.action.type === "start"
+            ? "active"
+            : existing.status;
+      const updated = await updateGame(body.gameId, nextState, status);
+      return NextResponse.json(ok(updated));
+    }
+
+    if (body.gameType && GAME_TYPES.includes(body.gameType)) {
+      const created = await createGame(requireCircleId(session), body.gameType);
+      return NextResponse.json(ok(created));
+    }
+
+    return NextResponse.json(fail("Invalid game request"), { status: 400 });
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Game action failed"),

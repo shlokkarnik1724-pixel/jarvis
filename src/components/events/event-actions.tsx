@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { ShoppingItemView } from "@/lib/types";
 
 interface EventActionsProps {
@@ -10,6 +11,7 @@ interface EventActionsProps {
   initiallyCheckedIn: boolean;
   checkinCount: number;
   shopping: ShoppingItemView[];
+  canAddItems?: boolean;
 }
 
 export function EventActions({
@@ -17,11 +19,13 @@ export function EventActions({
   initiallyCheckedIn,
   checkinCount,
   shopping,
+  canAddItems = false,
 }: EventActionsProps) {
   const router = useRouter();
   const [checkedIn, setCheckedIn] = useState(initiallyCheckedIn);
   const [count, setCount] = useState(checkinCount);
   const [items, setItems] = useState(shopping);
+  const [newItem, setNewItem] = useState("");
   const [pending, startTransition] = useTransition();
 
   function checkIn() {
@@ -33,11 +37,11 @@ export function EventActions({
       });
       const json = (await response.json()) as {
         success: boolean;
-        data?: { checkedInByMe: boolean; checkinCount: number };
+        data?: { checkedInByMe?: boolean; checkinCount?: number };
       };
       if (json.success && json.data) {
-        setCheckedIn(json.data.checkedInByMe);
-        setCount(json.data.checkinCount);
+        setCheckedIn(Boolean(json.data.checkedInByMe ?? true));
+        setCount(json.data.checkinCount ?? count + 1);
         router.refresh();
       }
     });
@@ -63,6 +67,45 @@ export function EventActions({
     });
   }
 
+  function addItem() {
+    startTransition(async () => {
+      const response = await fetch(`/api/events/${eventId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "add_item", itemName: newItem }),
+      });
+      const json = (await response.json()) as {
+        success: boolean;
+        data?: {
+          id: string;
+          event_id?: string;
+          eventId?: string;
+          item_name?: string;
+          itemName?: string;
+          quantity?: string | null;
+          claimer_id?: string | null;
+          claimerId?: string | null;
+        };
+      };
+      if (json.success && json.data) {
+        const raw = json.data;
+        setItems((prev) => [
+          ...prev,
+          {
+            id: raw.id,
+            eventId: raw.eventId ?? raw.event_id ?? eventId,
+            itemName: raw.itemName ?? raw.item_name ?? newItem,
+            quantity: raw.quantity ?? null,
+            claimerId: raw.claimerId ?? raw.claimer_id ?? null,
+            claimerName: null,
+          },
+        ]);
+        setNewItem("");
+        router.refresh();
+      }
+    });
+  }
+
   return (
     <div className="space-y-8">
       <section className="border-y border-[var(--line)] py-6">
@@ -81,6 +124,22 @@ export function EventActions({
 
       <section>
         <h2 className="mb-4 text-lg font-medium">Shopping list</h2>
+        {canAddItems ? (
+          <div className="mb-4 flex gap-2">
+            <Input
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              placeholder="Add an item…"
+            />
+            <Button
+              size="sm"
+              disabled={pending || !newItem.trim()}
+              onClick={addItem}
+            >
+              Add
+            </Button>
+          </div>
+        ) : null}
         <ul className="space-y-3">
           {items.map((item) => (
             <li

@@ -6,7 +6,14 @@ import {
   getDemoEvent,
   getDemoShopping,
 } from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
+import {
+  addShoppingItem,
+  checkInEvent,
+  claimShoppingItem,
+  createEvent,
+  getEventDetail,
+} from "@/lib/data/circle-queries";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 import { fail, ok } from "@/lib/utils";
 
 interface RouteContext {
@@ -27,12 +34,14 @@ export async function GET(_request: Request, context: RouteContext) {
       if (!event) {
         return NextResponse.json(fail("Event not found"), { status: 404 });
       }
-      return NextResponse.json(
-        ok({ event, shopping: getDemoShopping(id) })
-      );
+      return NextResponse.json(ok({ event, shopping: getDemoShopping(id) }));
     }
 
-    return NextResponse.json(fail("Not found"), { status: 404 });
+    const detail = await getEventDetail(id, session.user.id);
+    if (!detail) {
+      return NextResponse.json(fail("Event not found"), { status: 404 });
+    }
+    return NextResponse.json(ok(detail));
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Failed to load event"),
@@ -50,8 +59,14 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { id } = await context.params;
     const body = (await request.json()) as {
-      action?: "checkin" | "claim";
+      action?: "checkin" | "claim" | "create" | "add_item";
       itemId?: string;
+      itemName?: string;
+      quantity?: string;
+      title?: string;
+      date?: string;
+      location?: string;
+      tags?: string[];
     };
 
     if (DEMO_MODE || session.demo) {
@@ -74,9 +89,42 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json(fail("Invalid action"), { status: 400 });
     }
 
-    return NextResponse.json(fail("Supabase event actions not yet wired"), {
-      status: 501,
-    });
+    if (body.action === "create") {
+      if (!body.title?.trim() || !body.date) {
+        return NextResponse.json(fail("title and date are required"), {
+          status: 400,
+        });
+      }
+      const created = await createEvent({
+        circleId: requireCircleId(session),
+        title: body.title,
+        date: body.date,
+        location: body.location,
+        tags: body.tags,
+      });
+      return NextResponse.json(ok(created));
+    }
+
+    if (body.action === "checkin") {
+      const detail = await checkInEvent(id, session.user.id);
+      return NextResponse.json(ok(detail?.event));
+    }
+
+    if (body.action === "claim" && body.itemId) {
+      const item = await claimShoppingItem(id, body.itemId, session.user.id);
+      return NextResponse.json(ok(item));
+    }
+
+    if (body.action === "add_item" && body.itemName?.trim()) {
+      const item = await addShoppingItem({
+        eventId: id,
+        itemName: body.itemName,
+        quantity: body.quantity,
+      });
+      return NextResponse.json(ok(item));
+    }
+
+    return NextResponse.json(fail("Invalid action"), { status: 400 });
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Event action failed"),

@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,35 +12,50 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(
     searchParams.get("error") === "auth" ? "Authentication failed. Try again." : null
   );
+  const [message, setMessage] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [pending, startTransition] = useTransition();
 
-  function handleLogin() {
-    startTransition(async () => {
-      setError(null);
-      try {
-        const response = await fetch("/api/auth/login", { method: "POST" });
-        const json = (await response.json()) as {
-          success: boolean;
-          data?: { url?: string; demo?: boolean };
-          error?: string;
-        };
-
-        if (!json.success) {
-          setError(json.error ?? "Login failed");
-          return;
-        }
-
-        if (json.data?.url) {
-          window.location.href = json.data.url;
-          return;
-        }
-
-        router.push(searchParams.get("next") || "/dashboard");
-        router.refresh();
-      } catch {
-        setError("Network error during login");
-      }
+  async function runAuth(payload: Record<string, unknown>) {
+    setError(null);
+    setMessage(null);
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
+    const json = (await response.json()) as {
+      success: boolean;
+      data?: {
+        url?: string;
+        demo?: boolean;
+        confirmEmail?: boolean;
+        message?: string;
+        needsCircle?: boolean;
+      };
+      error?: string;
+    };
+
+    if (!json.success) {
+      setError(json.error ?? "Login failed");
+      return;
+    }
+
+    if (json.data?.url) {
+      window.location.href = json.data.url;
+      return;
+    }
+
+    if (json.data?.confirmEmail) {
+      setMessage(json.data.message ?? "Check your email to confirm your account.");
+      return;
+    }
+
+    const next = searchParams.get("next") || "/dashboard";
+    router.push(next);
+    router.refresh();
   }
 
   return (
@@ -46,43 +63,125 @@ export default function LoginPage() {
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,#12261e_0%,#1f6f54_42%,#d9e4ef_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.18),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(20,32,27,0.35),transparent_45%)]" />
-        <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:48px_48px]" />
       </div>
 
       <main className="mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16">
-        <div className="max-w-xl animate-fade-up">
-          <p className="font-display text-5xl leading-none tracking-tight text-white md:text-7xl">
-            Circle
-          </p>
-          <div className="mt-4 h-1 w-24 origin-left rounded-full bg-[#d8eee4] animate-reveal-line" />
-          <h1 className="mt-8 max-w-lg text-2xl font-medium leading-snug text-white/95 md:text-3xl">
-            Your closed friend group, private by default.
-          </h1>
-          <p className="mt-4 max-w-md text-base text-white/75">
-            Events, a locked photo vault, live games, and shared tabs — built for
-            the people you actually trust.
-          </p>
-
-          <div className="mt-10 flex flex-col items-start gap-4">
-            <Button
-              size="lg"
-              onClick={handleLogin}
-              disabled={pending}
-              className="bg-white text-[var(--accent-deep)] hover:bg-[#f3faf6]"
-            >
-              {pending ? "Opening Circle…" : "Enter Circle (Demo)"}
-            </Button>
-            <p className="max-w-md text-sm text-white/70">
-              One-click demo access — no account required. When Supabase Google
-              OAuth is configured, this same button starts Google sign-in.
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="max-w-xl animate-fade-up">
+            <p className="font-display text-5xl leading-none tracking-tight text-white md:text-7xl">
+              Circle
+            </p>
+            <div className="mt-4 h-1 w-24 origin-left rounded-full bg-[#d8eee4] animate-reveal-line" />
+            <h1 className="mt-8 max-w-lg text-2xl font-medium leading-snug text-white/95 md:text-3xl">
+              Your closed friend group, private by default.
+            </h1>
+            <p className="mt-4 max-w-md text-base text-white/75">
+              Sign in, create a circle, invite friends with a code. Shared events,
+              vault, tabs, and games — for your people only.
             </p>
           </div>
 
-          {error ? (
-            <p className="mt-4 rounded-xl bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger)]">
-              {error}
+          <div className="rounded-3xl border border-white/20 bg-white/95 p-6 text-[var(--ink)] shadow-xl backdrop-blur animate-fade-up">
+            <h2 className="font-display text-2xl">Join your circle</h2>
+            <p className="mt-1 text-sm text-[var(--ink-muted)]">
+              Use email for friends, or Google if configured.
             </p>
-          ) : null}
+
+            <div className="mt-5 space-y-3">
+              <div>
+                <Label htmlFor="name">Name (signup)</Label>
+                <Input
+                  id="name"
+                  className="mt-1"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Alex"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  className="mt-1"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@friends.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  className="mt-1"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2">
+              <Button
+                disabled={pending}
+                onClick={() =>
+                  startTransition(() =>
+                    runAuth({
+                      mode: "email",
+                      intent: "signup",
+                      email,
+                      password,
+                      name,
+                    })
+                  )
+                }
+              >
+                Create account
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={pending}
+                onClick={() =>
+                  startTransition(() =>
+                    runAuth({
+                      mode: "email",
+                      intent: "signin",
+                      email,
+                      password,
+                    })
+                  )
+                }
+              >
+                Sign in with email
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={pending}
+                onClick={() => startTransition(() => runAuth({ mode: "google" }))}
+              >
+                Continue with Google
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={pending}
+                onClick={() => startTransition(() => runAuth({ mode: "demo" }))}
+              >
+                Preview demo (local only)
+              </Button>
+            </div>
+
+            {error ? (
+              <p className="mt-4 rounded-xl bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger)]">
+                {error}
+              </p>
+            ) : null}
+            {message ? (
+              <p className="mt-4 rounded-xl bg-[var(--ok-soft)] px-4 py-3 text-sm text-[var(--ok)]">
+                {message}
+              </p>
+            ) : null}
+          </div>
         </div>
       </main>
     </div>

@@ -1,13 +1,18 @@
 import { CanvasViewer } from "@/components/vault/canvas-viewer";
+import { VaultUpload } from "@/components/vault/vault-upload";
 import { DEMO_MODE } from "@/lib/config";
+import { listPhotos } from "@/lib/data/circle-queries";
 import { getDemoPhotos } from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 
 export default async function VaultPage() {
   const session = await getSessionContext();
   if (!session) return null;
 
-  const photos = DEMO_MODE || session.demo ? getDemoPhotos() : [];
+  const photos =
+    DEMO_MODE || session.demo
+      ? getDemoPhotos()
+      : await listPhotos(requireCircleId(session));
   const viewerName = session.membership?.nickname || session.user.name;
 
   return (
@@ -19,6 +24,8 @@ export default async function VaultPage() {
           canvas. Right-click, drag, and console export paths are blocked.
         </p>
       </div>
+
+      <VaultUpload enabled={!session.demo && !DEMO_MODE} />
 
       {photos.length === 0 ? (
         <p className="text-[var(--ink-muted)]">No vault photos yet.</p>

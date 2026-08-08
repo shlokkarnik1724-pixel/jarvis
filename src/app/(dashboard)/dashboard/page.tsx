@@ -9,6 +9,12 @@ import {
   getDemoLeaderboard,
   getDemoShopping,
 } from "@/lib/demo/store";
+import {
+  listEvents,
+  listGames,
+  listLeaderboard,
+  getEventDetail,
+} from "@/lib/data/circle-queries";
 import { getSessionContext } from "@/lib/session";
 import { formatDate } from "@/lib/utils";
 
@@ -16,23 +22,43 @@ export default async function DashboardPage() {
   const session = await getSessionContext();
   if (!session) return null;
 
-  const events = DEMO_MODE || session.demo ? getDemoEvents() : [];
+  const circleId = session.circle?.id;
+  const events =
+    DEMO_MODE || session.demo || !circleId
+      ? getDemoEvents()
+      : await listEvents(circleId, session.user.id);
+
   const upcoming = [...events].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   )[0];
-  const shopping = upcoming ? getDemoShopping(upcoming.id) : [];
-  const leaderboard = DEMO_MODE || session.demo ? getDemoLeaderboard().slice(0, 3) : [];
-  const games = DEMO_MODE || session.demo ? getDemoGames() : [];
+
+  const shopping =
+    DEMO_MODE || session.demo
+      ? upcoming
+        ? getDemoShopping(upcoming.id)
+        : []
+      : upcoming
+        ? (await getEventDetail(upcoming.id, session.user.id))?.shopping ?? []
+        : [];
+
+  const leaderboard =
+    DEMO_MODE || session.demo || !circleId
+      ? getDemoLeaderboard().slice(0, 3)
+      : (await listLeaderboard(circleId)).slice(0, 3);
+
+  const games =
+    DEMO_MODE || session.demo || !circleId
+      ? getDemoGames()
+      : await listGames(circleId);
 
   return (
     <div className="space-y-10">
       <section className="relative overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(135deg,rgba(31,111,84,0.12),rgba(217,228,239,0.55)_45%,rgba(251,252,249,0.9))] px-6 py-8 md:px-10 md:py-12">
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_70%_40%,var(--hero-glow),transparent_55%)]" />
         <div className="relative max-w-2xl">
           <p className="font-display text-4xl tracking-tight md:text-5xl">Circle</p>
           <p className="mt-3 text-lg text-[var(--ink-muted)]">
-            Welcome back, {session.membership?.nickname || session.user.name}. Your
-            private hub is synced and ready.
+            Welcome back, {session.membership?.nickname || session.user.name}.
+            {session.circle ? ` You're in ${session.circle.name}.` : null}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild>
@@ -43,6 +69,11 @@ export default async function DashboardPage() {
             <Button asChild variant="secondary">
               <Link href="/games">Launch a game</Link>
             </Button>
+            {session.circle?.inviteCode ? (
+              <Button asChild variant="ghost">
+                <Link href="/settings">Invite: {session.circle.inviteCode}</Link>
+              </Button>
+            ) : null}
           </div>
         </div>
       </section>
@@ -70,16 +101,15 @@ export default async function DashboardPage() {
                 </div>
                 <Badge>{upcoming.checkinCount} checked in</Badge>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {upcoming.tags.map((tag) => (
-                  <Badge key={tag} className="bg-[var(--bg)] text-[var(--ink-muted)]">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
             </Link>
           ) : (
-            <p className="text-[var(--ink-muted)]">No upcoming events yet.</p>
+            <p className="text-[var(--ink-muted)]">
+              No upcoming events yet.{" "}
+              <Link href="/events" className="text-[var(--accent-deep)]">
+                Create one
+              </Link>
+              .
+            </p>
           )}
 
           <div className="pt-2">
@@ -87,22 +117,26 @@ export default async function DashboardPage() {
               <ListChecks className="h-4 w-4 text-[var(--accent)]" />
               <h3 className="font-medium">Shared shopping list</h3>
             </div>
-            <ul className="space-y-2">
-              {shopping.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center justify-between border-b border-[var(--line)] py-2 text-sm"
-                >
-                  <span>
-                    {item.itemName}
-                    {item.quantity ? ` × ${item.quantity}` : ""}
-                  </span>
-                  <span className="text-[var(--ink-muted)]">
-                    {item.claimerName ?? "Unclaimed"}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {shopping.length === 0 ? (
+              <p className="text-sm text-[var(--ink-muted)]">Nothing on the list.</p>
+            ) : (
+              <ul className="space-y-2">
+                {shopping.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between border-b border-[var(--line)] py-2 text-sm"
+                  >
+                    <span>
+                      {item.itemName}
+                      {item.quantity ? ` × ${item.quantity}` : ""}
+                    </span>
+                    <span className="text-[var(--ink-muted)]">
+                      {item.claimerName ?? "Unclaimed"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
@@ -123,9 +157,6 @@ export default async function DashboardPage() {
                 </li>
               ))}
             </ol>
-            <Button asChild variant="ghost" size="sm" className="mt-3 px-0">
-              <Link href="/leaderboard">Full rankings</Link>
-            </Button>
           </div>
 
           <div>
@@ -137,7 +168,7 @@ export default async function DashboardPage() {
               <p className="text-sm text-[var(--ink-muted)]">No lobbies open.</p>
             ) : (
               <ul className="space-y-2 text-sm">
-                {games.map((game) => (
+                {games.slice(0, 4).map((game) => (
                   <li key={game.id}>
                     <Link
                       href={`/games/${game.gameType}?id=${game.id}`}

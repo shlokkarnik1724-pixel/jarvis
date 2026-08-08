@@ -12,6 +12,10 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  if (!session.demo && !session.circle) {
+    redirect("/onboarding");
+  }
+
   return (
     <CircleShell
       circleName={session.circle?.name ?? "Your Circle"}

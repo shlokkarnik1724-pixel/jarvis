@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { DEMO_MODE } from "@/lib/config";
 import {
-  addDemoTab,
-  getDemoTabs,
-} from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
+  addTab,
+  listTabs,
+} from "@/lib/data/circle-queries";
+import { DEMO_MODE } from "@/lib/config";
+import { addDemoTab, getDemoTabs } from "@/lib/demo/store";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 import { settleDebts } from "@/lib/utils/settlements";
 import { fail, ok } from "@/lib/utils";
 
@@ -15,19 +16,19 @@ export async function GET() {
       return NextResponse.json(fail("Unauthorized"), { status: 401 });
     }
 
-    if (DEMO_MODE || session.demo) {
-      const tabs = getDemoTabs();
-      const settlements = settleDebts(
-        tabs.map((tab) => ({
-          payerId: tab.payerId,
-          payerName: tab.payerName,
-          amount: tab.amount,
-        }))
-      );
-      return NextResponse.json(ok({ tabs, settlements }));
-    }
+    const tabs =
+      DEMO_MODE || session.demo
+        ? getDemoTabs()
+        : await listTabs(requireCircleId(session));
 
-    return NextResponse.json(ok({ tabs: [], settlements: [] }));
+    const settlements = settleDebts(
+      tabs.map((tab) => ({
+        payerId: tab.payerId,
+        payerName: tab.payerName,
+        amount: tab.amount,
+      }))
+    );
+    return NextResponse.json(ok({ tabs, settlements }));
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Failed to load tabs"),
@@ -70,9 +71,13 @@ export async function POST(request: Request) {
       return NextResponse.json(ok(entry));
     }
 
-    return NextResponse.json(fail("Supabase tab persistence not yet wired"), {
-      status: 501,
+    const entry = await addTab({
+      circleId: requireCircleId(session),
+      payerId: session.user.id,
+      amount: Math.round(amount * 100) / 100,
+      description,
     });
+    return NextResponse.json(ok(entry));
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Failed to add tab"),

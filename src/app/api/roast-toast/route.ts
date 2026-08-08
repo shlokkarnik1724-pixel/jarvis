@@ -5,7 +5,8 @@ import {
   getDemoRoasts,
   voteDemoRoast,
 } from "@/lib/demo/store";
-import { getSessionContext } from "@/lib/session";
+import { addRoast, listRoasts, voteRoast } from "@/lib/data/circle-queries";
+import { getSessionContext, requireCircleId } from "@/lib/session";
 import { fail, ok } from "@/lib/utils";
 
 export async function GET() {
@@ -19,7 +20,9 @@ export async function GET() {
       return NextResponse.json(ok(getDemoRoasts()));
     }
 
-    return NextResponse.json(ok([]));
+    return NextResponse.json(
+      ok(await listRoasts(requireCircleId(session), session.user.id))
+    );
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Failed to load roast/toast"),
@@ -53,7 +56,6 @@ export async function POST(request: Request) {
       }
 
       if ((body.kind === "roast" || body.kind === "toast") && body.body?.trim()) {
-        // Intentionally strip author identity before persistence
         const entry = addDemoRoast({
           kind: body.kind,
           body: body.body.trim(),
@@ -66,8 +68,26 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json(fail("Supabase roast persistence not yet wired"), {
-      status: 501,
+    if (body.id && typeof body.vote === "number") {
+      const updated = await voteRoast(
+        body.id,
+        session.user.id,
+        body.vote === -1 ? -1 : 1
+      );
+      return NextResponse.json(ok(updated));
+    }
+
+    if ((body.kind === "roast" || body.kind === "toast") && body.body?.trim()) {
+      const entry = await addRoast({
+        circleId: requireCircleId(session),
+        kind: body.kind,
+        body: body.body.trim(),
+      });
+      return NextResponse.json(ok(entry));
+    }
+
+    return NextResponse.json(fail("Invalid roast/toast payload"), {
+      status: 400,
     });
   } catch (error) {
     return NextResponse.json(
