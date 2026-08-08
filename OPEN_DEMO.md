@@ -1,60 +1,93 @@
-# Open the running demo (fastest)
+# Open Tactix AI on Windows (exact steps)
 
-From the **jarvis** project folder (not your user home folder):
+## Fastest way
 
-```bash
-cd jarvis
+1. Open File Explorer
+2. Go into your `jarvis` folder  
+   Example: `C:\Users\shlok karnik\jarvis`
+3. Double-click **`start-demo.bat`**
+4. Wait until the black window shows:
+   ```
+   ✓ Ready
+   Local: http://127.0.0.1:3000
+   ```
+5. Open Chrome and go to:
+
+**http://127.0.0.1:3000/demo**
+
+Keep the black window open. Closing it stops the app.
+
+---
+
+## Manual way (PowerShell)
+
+Open PowerShell and run **one command at a time**:
+
+```powershell
+cd "C:\Users\shlok karnik\jarvis"
+```
+
+Confirm you are in the right folder:
+
+```powershell
+dir package.json
+```
+
+You must see `package.json`. If not, you are in the wrong folder.
+
+Then:
+
+```powershell
 git checkout cursor/tactix-ai-mvp-fcc1
 git pull origin cursor/tactix-ai-mvp-fcc1
 npm install
 npm run dev
 ```
 
-Wait until the terminal shows:
+When Ready appears, open:
 
-```
-✓ Ready
-Local: http://localhost:3000
-```
+**http://127.0.0.1:3000/demo**
 
-Then open **exactly one** of these in Chrome/Edge:
+---
 
-1. **http://localhost:3000/demo** ← one-click running demo (recommended)
-2. http://localhost:3000
-3. http://127.0.0.1:3000/demo
+## If it still does not open
 
-## If localhost:3000 does not open
+### A) Browser says “This site can’t be reached”
+- The server is not running, or you closed the terminal
+- Run `start-demo.bat` again and wait for `Ready`
 
-### 1) Wrong folder (most common on Windows)
-You must run commands inside `jarvis`, not `C:\Users\<you>`.
+### B) Port 3000 already in use
+In PowerShell:
 
-```bash
-cd path\to\jarvis
-npm run dev
-```
-
-### 2) Port already in use
-Close other terminals running Next, then:
-
-**Windows PowerShell**
 ```powershell
-Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue |
+  ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+cd "C:\Users\shlok karnik\jarvis"
 npm run dev
 ```
 
-**Mac/Linux**
-```bash
-npx kill-port 3000
-npm run dev
-```
+### C) You ran commands from `C:\Users\shlok karnik` (wrong)
+That causes the lockfile warning and broken startup.  
+Always `cd` into `jarvis` first.
 
-### 3) Still blank / connection refused
-```bash
+### D) Node is missing
+Install Node LTS from https://nodejs.org  
+Then reopen PowerShell and retry.
+
+### E) Still stuck — production mode
+```powershell
+cd "C:\Users\shlok karnik\jarvis"
 npm run build
 npm run start
 ```
 Then open http://127.0.0.1:3000/demo
 
-## Demo credentials (optional login)
-- Email: `investor@demo.tactix.ai`
-- Password: `demo1234`
+---
+
+## Correct demo link
+
+Use this exact URL:
+
+**http://127.0.0.1:3000/demo**
+
+Not `https://`, not a random port, not just `localhost` without the server running.
