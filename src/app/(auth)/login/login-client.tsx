@@ -63,17 +63,18 @@ export default function LoginPage() {
             the people you actually trust.
           </p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-3">
+          <div className="mt-10 flex flex-col items-start gap-4">
             <Button
               size="lg"
               onClick={handleLogin}
               disabled={pending}
               className="bg-white text-[var(--accent-deep)] hover:bg-[#f3faf6]"
             >
-              {pending ? "Connecting…" : "Continue with Google"}
+              {pending ? "Opening Circle…" : "Enter Circle (Demo)"}
             </Button>
-            <p className="text-sm text-white/65">
-              Demo mode activates automatically without Supabase keys.
+            <p className="max-w-md text-sm text-white/70">
+              One-click demo access — no account required. When Supabase Google
+              OAuth is configured, this same button starts Google sign-in.
             </p>
           </div>
 

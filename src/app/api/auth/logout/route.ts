@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { DEMO_MODE, getSiteUrl, isSupabaseConfigured } from "@/lib/config";
+import { DEMO_MODE, isSupabaseConfigured } from "@/lib/config";
 import { DEMO_COOKIE, demoLogout } from "@/lib/demo/store";
 import { fail, ok } from "@/lib/utils";
 
+function originFrom(request: Request): string {
+  const proto = request.headers.get("x-forwarded-proto") ?? "http";
+  const host =
+    request.headers.get("x-forwarded-host") ??
+    request.headers.get("host") ??
+    "localhost:3000";
+  return `${proto}://${host}`;
+}
+
 export async function POST(request: Request) {
   try {
-    const site = getSiteUrl();
+    const origin = originFrom(request);
     const wantsJson = request.headers.get("accept")?.includes("application/json");
 
     if (DEMO_MODE || !isSupabaseConfigured()) {
@@ -17,7 +26,7 @@ export async function POST(request: Request) {
       if (wantsJson) {
         return NextResponse.json(ok({ signedOut: true }));
       }
-      return NextResponse.redirect(new URL("/login", site), { status: 303 });
+      return NextResponse.redirect(new URL("/login", origin), { status: 303 });
     }
 
     const { createClient } = await import("@/lib/supabase/server");
@@ -27,7 +36,7 @@ export async function POST(request: Request) {
     if (wantsJson) {
       return NextResponse.json(ok({ signedOut: true }));
     }
-    return NextResponse.redirect(new URL("/login", site), { status: 303 });
+    return NextResponse.redirect(new URL("/login", origin), { status: 303 });
   } catch (error) {
     return NextResponse.json(
       fail(error instanceof Error ? error.message : "Logout failed"),
