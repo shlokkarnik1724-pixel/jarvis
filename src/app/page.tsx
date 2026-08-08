@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { ArrowRight, Play, Sparkles } from "lucide-react";
 
 const SAMPLE_SLACK = `Alex (AE): Enterprise prospect wants 20% off to close this quarter.
 Jordan (Manager): Cap at 15% for Enterprise — no manager sign-off needed under that. Above 15% escalate to me.
@@ -10,10 +14,34 @@ const SAMPLE_SKILL = `{
   "condition": "Customer Tier = Enterprise",
   "action": "Permit up to 15% discount without manager sign-off",
   "category": "Discounting",
-  "confidence": 0.87
+  "confidence": 0.91,
+  "source_excerpt": "Cap at 15% for Enterprise — no manager sign-off needed"
 }`;
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [loadingDemo, setLoadingDemo] = useState(false);
+  const [error, setError] = useState("");
+
+  async function launchDemo() {
+    setLoadingDemo(true);
+    setError("");
+    try {
+      const res = await fetch("/api/demo/launch", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not launch demo");
+        setLoadingDemo(false);
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Network error launching demo");
+      setLoadingDemo(false);
+    }
+  }
+
   return (
     <div className="min-h-screen">
       <header className="absolute inset-x-0 top-0 z-20 px-6 py-5 flex items-center justify-between max-w-6xl mx-auto w-full">
@@ -21,6 +49,12 @@ export default function LandingPage() {
           Tactix <span className="text-[var(--accent)]">AI</span>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href="/convert"
+            className="hidden sm:inline text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
+          >
+            Free converter
+          </Link>
           <Link
             href="/login"
             className="text-sm text-[var(--ink-muted)] hover:text-[var(--ink)]"
@@ -50,23 +84,39 @@ export default function LandingPage() {
             The Living Operating System for Enterprise AI Agents
           </h1>
           <p className="mt-4 max-w-xl text-[var(--ink-muted)] text-base sm:text-lg animate-fade-up-delay">
-            Mine Slack and support threads into versioned decision skills —
-            then deploy agents that cite the exact approved rule.
+            Turn messy Slack and support threads into versioned decision skills —
+            then run agents that cite the exact approved rule.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 animate-fade-up-delay-2">
+            <button
+              type="button"
+              onClick={launchDemo}
+              disabled={loadingDemo}
+              className="inline-flex items-center gap-2 rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+            >
+              <Play size={16} />
+              {loadingDemo ? "Opening demo…" : "Launch live demo"}
+            </button>
+            <Link
+              href="/convert"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white/70 px-5 py-3 text-sm font-medium backdrop-blur hover:bg-white"
+            >
+              <Sparkles size={16} /> Try free converter
+            </Link>
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-medium text-white hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-md px-5 py-3 text-sm font-medium text-[var(--accent-deep)] hover:underline"
             >
               Start Free <ArrowRight size={16} />
             </Link>
-            <a
-              href="#pipeline"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white/70 px-5 py-3 text-sm font-medium backdrop-blur hover:bg-white"
-            >
-              Watch 90-sec Demo
-            </a>
           </div>
+          {error && (
+            <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
+          )}
+          <p className="mt-4 text-xs text-[var(--ink-muted)]">
+            Demo opens a seeded Acme workspace with approved skills, pending
+            review queue, and a working agent simulator — no signup required.
+          </p>
         </div>
       </section>
 
@@ -93,7 +143,7 @@ export default function LandingPage() {
               {
                 step: "03",
                 title: "Deploy",
-                body: "Approve with human governance, then simulate or export to agent stacks.",
+                body: "Approve with human governance, simulate, then export to LangChain / CrewAI.",
               },
             ].map((item) => (
               <div key={item.step} className="border-t border-[var(--line)] pt-5">
@@ -134,26 +184,32 @@ export default function LandingPage() {
           <p className="text-sm text-[var(--ink-muted)] mb-6">Works with</p>
           <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-medium text-[var(--ink)]/70">
             {["Slack", "Zendesk", "Gmail", "LangChain", "CrewAI"].map((name) => (
-              <span key={name} className="inline-flex items-center gap-2">
-                <Check size={14} className="text-[var(--accent)]" /> {name}
-              </span>
+              <span key={name}>{name}</span>
             ))}
           </div>
-          <div className="mt-12">
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--accent-deep)]"
+          <div className="mt-12 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={launchDemo}
+              disabled={loadingDemo}
+              className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--accent-deep)] disabled:opacity-60"
             >
-              Start Free <ArrowRight size={16} />
+              <Play size={16} /> Launch live demo
+            </button>
+            <Link
+              href="/convert"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white px-5 py-3 text-sm font-medium"
+            >
+              Free Slack-to-Skill converter
             </Link>
           </div>
         </div>
       </section>
 
       <footer className="px-6 py-8 text-sm text-[var(--ink-muted)] border-t border-[var(--line)]">
-        <div className="mx-auto max-w-6xl flex justify-between">
-          <span className="font-display">Tactix AI</span>
-          <span>Company brain for AI agents</span>
+        <div className="mx-auto max-w-6xl flex flex-wrap justify-between gap-3">
+          <span className="font-display text-[var(--ink)]">Tactix AI</span>
+          <span>Company brain for AI agents · Investor MVP</span>
         </div>
       </footer>
     </div>

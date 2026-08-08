@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { Badge, Button, Label, Select, Textarea } from "@/components/ui";
 
 const STEPS = [
@@ -11,17 +11,33 @@ const STEPS = [
   "Checking for conflicts…",
 ];
 
-const SAMPLE = `Alex (AE): Enterprise prospect wants 20% off to close this quarter.
+const SAMPLES: Record<string, string> = {
+  Discounting: `Alex (AE): Enterprise prospect wants 20% off to close this quarter.
 Jordan (Manager): Cap at 15% for Enterprise — no manager sign-off needed under that. Above 15% escalate to me. Don't forget expiry on the exception.
-Alex: Got it — locking 15% for Acme.`;
+Alex: Got it — locking 15% for Acme.`,
+  Refunds: `Priya (Support): Customer #4821 wants a full refund 45 days after purchase — window is 30 days, but they're Enterprise and had a 2-day outage.
+Marcus (CS Lead): For Enterprise accounts impacted by a P1 outage, approve a full refund even outside the 30-day window. Document exception and CC finance.
+Priya: Processing now.`,
+  Escalation: `Sam (L1): VIP account NovaCorp says checkout is broken. Escalate?
+Riley (On-call): Yes — VIP/Enterprise blocking issues escalate to on-call immediately. First customer update within 15 minutes.`,
+  "Incident Response": `DevOps Bot: SEV-2 — payments latency > 3s in us-east.
+Casey (SRE): Flip traffic to us-west standby, page payments owner, post status every 10 minutes until green.`,
+};
 
 export default function ExtractPage() {
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [category, setCategory] = useState("Discounting");
   const [processing, setProcessing] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [error, setError] = useState("");
+
+  async function onFile(file: File | null) {
+    if (!file) return;
+    const content = await file.text();
+    setText(content);
+  }
 
   async function extract() {
     setError("");
@@ -62,7 +78,7 @@ export default function ExtractPage() {
     <div>
       <h1 className="font-display text-3xl tracking-tight">Extract Skill</h1>
       <p className="mt-1 text-sm text-[var(--ink-muted)]">
-        Paste a conversation. Watch the rule take shape.
+        Paste or upload a conversation. Watch the rule take shape.
       </p>
 
       {!processing ? (
@@ -82,17 +98,35 @@ export default function ExtractPage() {
             </Select>
           </div>
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
               <Label htmlFor="text" className="mb-0">
                 Conversation
               </Label>
-              <button
-                type="button"
-                className="text-xs text-[var(--accent)]"
-                onClick={() => setText(SAMPLE)}
-              >
-                Load sample
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  className="text-xs text-[var(--accent)]"
+                  onClick={() =>
+                    setText(SAMPLES[category] || SAMPLES.Discounting)
+                  }
+                >
+                  Load sample
+                </button>
+                <button
+                  type="button"
+                  className="text-xs text-[var(--accent)]"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  Upload .txt / .eml
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".txt,.eml,.md,text/plain"
+                  className="hidden"
+                  onChange={(e) => onFile(e.target.files?.[0] || null)}
+                />
+              </div>
             </div>
             <Textarea
               id="text"
@@ -114,9 +148,7 @@ export default function ExtractPage() {
           <div className="mt-8 space-y-3">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-3">
-                <div
-                  className={`h-1.5 flex-1 rounded-full bg-[var(--line)] overflow-hidden`}
-                >
+                <div className="h-1.5 flex-1 rounded-full bg-[var(--line)] overflow-hidden">
                   <div
                     className={`h-full bg-[var(--accent)] processing-bar ${
                       i <= stepIdx ? "w-full" : "w-0"

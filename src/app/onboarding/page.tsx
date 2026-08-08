@@ -66,7 +66,8 @@ export default function OnboardingPage() {
         </h1>
         <p className="mt-2 text-[var(--ink-muted)] max-w-xl">
           Every skill, conversation, and agent run is scoped to a workspace.
-          This is your multi-tenant boundary.
+          New workspaces come pre-loaded with example skills so the product is
+          immediately demoable.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">

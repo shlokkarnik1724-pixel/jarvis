@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Badge, Button, Select } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 
@@ -15,10 +16,16 @@ type SkillRow = {
   updatedAt: string;
 };
 
-export default function SkillsLibraryPage() {
+function SkillsLibraryInner() {
+  const search = useSearchParams();
   const [skills, setSkills] = useState<SkillRow[]>([]);
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState(search.get("status") || "all");
   const [category, setCategory] = useState("all");
+
+  useEffect(() => {
+    const fromUrl = search.get("status");
+    if (fromUrl) setStatus(fromUrl);
+  }, [search]);
 
   useEffect(() => {
     const qs = new URLSearchParams({ status, category });
@@ -36,7 +43,7 @@ export default function SkillsLibraryPage() {
             Skill Library
           </h1>
           <p className="mt-1 text-sm text-[var(--ink-muted)]">
-            Review, approve, and version every extracted rule.
+            Review, approve, version, and export every extracted rule.
           </p>
         </div>
         <Link href="/extract">
@@ -134,5 +141,17 @@ export default function SkillsLibraryPage() {
         </table>
       </div>
     </div>
+  );
+}
+
+export default function SkillsLibraryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="text-sm text-[var(--ink-muted)]">Loading library…</div>
+      }
+    >
+      <SkillsLibraryInner />
+    </Suspense>
   );
 }

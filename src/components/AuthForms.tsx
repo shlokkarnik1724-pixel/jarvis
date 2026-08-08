@@ -135,6 +135,19 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
             </>
           )}
         </p>
+
+        <button
+          type="button"
+          className="mt-4 w-full text-sm text-[var(--accent-deep)] font-medium hover:underline"
+          onClick={async () => {
+            setLoading(true);
+            await fetch("/api/demo/launch", { method: "POST" });
+            router.push("/dashboard");
+            router.refresh();
+          }}
+        >
+          Or launch the live investor demo →
+        </button>
       </div>
     </div>
   );

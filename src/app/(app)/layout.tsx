@@ -23,17 +23,17 @@ export default async function AppLayout({
           userName={session.name}
         />
       </div>
-      <main className="flex-1 min-w-0">
-        <div className="md:hidden border-b border-[var(--line)] bg-white px-4 py-3 flex items-center justify-between">
-          <span className="font-display text-lg">
-            Tactix <span className="text-[var(--accent)]">AI</span>
-          </span>
-          <span className="text-xs text-[var(--ink-muted)] truncate max-w-[50%]">
-            {org?.name}
-          </span>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="md:hidden">
+          <AppSidebar
+            orgName={org?.name || "Workspace"}
+            userName={session.name}
+          />
         </div>
-        <div className="p-4 md:p-8 max-w-6xl mx-auto">{children}</div>
-      </main>
+        <main className="flex-1">
+          <div className="p-4 md:p-8 max-w-6xl mx-auto">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

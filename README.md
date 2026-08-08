@@ -1,51 +1,80 @@
-# Tactix AI
+# Tactix AI — Investor MVP
 
-Multi-tenant MVP that turns Slack/email/support conversations into structured, approved **skills** for AI agents.
+**The Living Operating System for Enterprise AI Agents**
 
-## Stack
+Turn Slack / support / email threads into versioned, approved decision skills — then simulate agents that cite the exact rule and source conversation.
 
-- Next.js App Router + TypeScript
-- Tailwind CSS
-- Local JSON datastore (org-scoped, demo-friendly — no Supabase required to run)
-- OpenAI structured extraction when `OPENAI_API_KEY` is set; deterministic demo engine otherwise
-- Cookie sessions (email/password)
+---
 
-## Run locally
+## 60-second start (for investors / reviewers)
 
 ```bash
 npm install
-cp .env.example .env.local   # already present in cloud agents
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open **http://localhost:3000** and click **Launch live demo**.
 
-### Demo path (investor / design partner)
+That opens a seeded **Acme Inc** workspace with:
+- 2 approved skills + 2 pending reviews
+- Live activity feed
+- Working extract → review → simulator loop
+- JSON / YAML / system-prompt export
 
-1. **Start Free** → sign up
-2. **Create workspace** (e.g. Acme Inc)
-3. **Paste a conversation** (sample threads are one click away)
-4. Watch **Extract Skill** processing animation
-5. **Approve** on the split-view Skill Review screen
-6. Open **Simulator** and ask: *“Can I offer this enterprise client a discount?”*
+No OpenAI key required (demo extraction engine is built in).  
+Optional: set `OPENAI_API_KEY` in `.env.local` for live LLM calls.
 
-Optional: set `OPENAI_API_KEY` in `.env.local` for live LLM extraction & simulation.
+Demo login (also created by Launch live demo):
+- Email: `investor@demo.tactix.ai`
+- Password: `demo1234`
 
-## Screens
+---
 
-| Route | Purpose |
+## What you can demo
+
+| Feature | Where |
 |---|---|
-| `/` | Landing |
-| `/signup`, `/login` | Auth |
-| `/onboarding` | Create / join workspace |
-| `/sources` | Connect sources + paste conversation |
-| `/dashboard` | Stats + activity |
-| `/extract` | Full extract flow |
-| `/skills`, `/skills/[id]` | Library + review |
-| `/simulator` | Agent playground |
-| `/settings` | Team, invite code, API key stub |
-| `/billing` | Static pricing tiers |
+| One-click seeded product tour | Landing → **Launch live demo** |
+| Free Slack-to-Skill converter (lead magnet) | `/convert` — no account |
+| Paste / upload conversation → extract skill | `/extract`, `/sources` |
+| Split-view review + approve/reject + versioning | `/skills/[id]` |
+| Conflict flags + confidence + missing fields | Skill review |
+| Agent simulator with citations | `/simulator` |
+| Export JSON / YAML / system prompt | Skill review + converter |
+| Multi-tenant workspaces + invite codes | Onboarding + Settings |
+| Pricing tiers | `/billing` |
 
-## Data model
+---
 
-Organizations own conversations, skills, versions, data sources, and memberships. Every API call is scoped by the session `organizationId`.
+## Investor walkthrough script
+
+1. Open the app → **Launch live demo**
+2. Dashboard shows living stats + activity (not an empty state)
+3. Skill Library → open a **pending** skill → approve in split view
+4. Click **Run Test** → ask: *“Can I offer this enterprise client a 15% discount?”*
+5. Point at the citation footer (skill id, approval date, Slack source)
+6. Optional: Extract a fresh thread, or show `/convert` as the free PLG wedge
+
+---
+
+## Share this repo
+
+```bash
+git clone <your-fork-or-this-repo>
+cd jarvis
+git checkout cursor/tactix-ai-mvp-fcc1
+npm install
+npm run dev
+```
+
+Or deploy to Vercel (Next.js) — no database provisioning required for the JSON-backed MVP store.
+
+---
+
+## Product thesis (from the blueprint)
+
+Traditional RAG tells agents *what text exists*. Tactix extracts *how to decide*:
+
+> IF Customer Tier = Enterprise → THEN permit up to 15% discount without manager sign-off
+
+Human-in-the-loop approval + source traceability is the governance moat before any agent acts in production.

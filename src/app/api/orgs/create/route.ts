@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireSession, refreshSessionForUser } from "@/lib/auth";
 import { id, now, updateDb } from "@/lib/db";
+import { buildDemoSeed } from "@/lib/seed";
 
 const schema = z.object({
   name: z.string().min(1),
   industry: z.enum(["SaaS", "Support", "Agency", "Other"]),
   teamSize: z.string().min(1),
   primaryUseCase: z.enum(["Support Ops", "Engineering", "Sales"]),
+  seedExamples: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
@@ -19,6 +21,25 @@ export async function POST(req: Request) {
       const existing = db.memberships.find((m) => m.userId === session.userId);
       if (existing) {
         throw new Error("ALREADY_IN_ORG");
+      }
+
+      // If they want a living product immediately, seed example skills
+      if (body.seedExamples !== false) {
+        const seed = buildDemoSeed(session.userId);
+        seed.org.name = body.name.trim();
+        seed.org.industry = body.industry;
+        seed.org.teamSize = body.teamSize;
+        seed.org.primaryUseCase = body.primaryUseCase;
+        seed.org.createdBy = session.userId;
+
+        db.organizations.push(seed.org);
+        db.memberships.push(seed.membership);
+        db.dataSources.push(...seed.dataSources);
+        db.conversations.push(...seed.conversations);
+        db.skills.push(...seed.skills);
+        db.skillVersions.push(...seed.skillVersions);
+        db.activities.push(...seed.activities);
+        return seed.org;
       }
 
       const organization = {
@@ -41,13 +62,32 @@ export async function POST(req: Request) {
         createdAt: now(),
       });
 
-      // Seed default data sources (manual connected; others coming soon)
       const sources = [
-        { type: "manual" as const, name: "Paste Conversation", status: "connected" as const },
-        { type: "slack" as const, name: "Slack", status: "coming_soon" as const },
-        { type: "zendesk" as const, name: "Zendesk", status: "coming_soon" as const },
-        { type: "email" as const, name: "Gmail / Outlook", status: "coming_soon" as const },
-        { type: "fireflies" as const, name: "Fireflies / Gong", status: "coming_soon" as const },
+        {
+          type: "manual" as const,
+          name: "Paste Conversation",
+          status: "connected" as const,
+        },
+        {
+          type: "slack" as const,
+          name: "Slack",
+          status: "coming_soon" as const,
+        },
+        {
+          type: "zendesk" as const,
+          name: "Zendesk",
+          status: "coming_soon" as const,
+        },
+        {
+          type: "email" as const,
+          name: "Gmail / Outlook",
+          status: "coming_soon" as const,
+        },
+        {
+          type: "fireflies" as const,
+          name: "Fireflies / Gong",
+          status: "coming_soon" as const,
+        },
       ];
 
       for (const s of sources) {
@@ -75,7 +115,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, organization: org });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Failed to create workspace";
+    const message =
+      e instanceof Error ? e.message : "Failed to create workspace";
     if (message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

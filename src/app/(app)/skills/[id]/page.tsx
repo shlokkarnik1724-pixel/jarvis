@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, Button, Input, Label, Select, Textarea } from "@/components/ui";
@@ -17,21 +18,35 @@ type Payload = {
     rawText: string;
     sourceRef: string;
   } | null;
+  exports?: {
+    json: SkillSchema;
+    yaml: string;
+    systemPrompt: string;
+  };
+  conflicts?: { id: string; title: string; action: string }[];
 };
 
 function highlightExcerpt(text: string, excerpt: string) {
-  if (!excerpt) return [{ t: text, h: false }];
-  const idx = text.toLowerCase().indexOf(excerpt.toLowerCase().slice(0, 40));
-  if (idx < 0) {
-    // try first meaningful line
-    return [{ t: text, h: false }];
-  }
-  const end = Math.min(text.length, idx + Math.max(excerpt.length, 40));
+  if (!excerpt || !text) return [{ t: text, h: false }];
+  const needle = excerpt.slice(0, Math.min(60, excerpt.length));
+  const idx = text.toLowerCase().indexOf(needle.toLowerCase());
+  if (idx < 0) return [{ t: text, h: false }];
+  const end = Math.min(text.length, idx + Math.max(excerpt.length, needle.length));
   return [
     { t: text.slice(0, idx), h: false },
     { t: text.slice(idx, end), h: true },
     { t: text.slice(end), h: false },
   ];
+}
+
+function download(filename: string, content: string, type = "application/json") {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function SkillReviewPage() {
@@ -41,15 +56,22 @@ export default function SkillReviewPage() {
   const [draft, setDraft] = useState<SkillSchema | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState("");
+
+  async function load() {
+    const res = await fetch(`/api/skills/${params.id}/export`);
+    const d = await res.json();
+    if (!res.ok) {
+      setError(d.error || "Failed to load skill");
+      return;
+    }
+    setData(d);
+    setDraft(d.skill?.jsonSchema || null);
+  }
 
   useEffect(() => {
-    fetch(`/api/skills/${params.id}`)
-      .then((r) => r.json())
-      .then((d) => {
-        setData(d);
-        setDraft(d.skill?.jsonSchema || null);
-      })
-      .catch(() => setError("Failed to load skill"));
+    load().catch(() => setError("Failed to load skill"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const parts = useMemo(() => {
@@ -80,15 +102,24 @@ export default function SkillReviewPage() {
     }
     if (action === "reject") {
       router.push("/skills");
-    } else {
-      router.push("/simulator");
+      router.refresh();
+      return;
     }
+    await load();
     router.refresh();
+  }
+
+  async function copyText(label: string, content: string) {
+    await navigator.clipboard.writeText(content);
+    setCopied(label);
+    setTimeout(() => setCopied(""), 1500);
   }
 
   if (!data || !draft) {
     return (
-      <div className="text-sm text-[var(--ink-muted)]">Loading skill…</div>
+      <div className="text-sm text-[var(--ink-muted)]">
+        {error || "Loading skill…"}
+      </div>
     );
   }
 
@@ -97,7 +128,7 @@ export default function SkillReviewPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-wide text-[var(--ink-muted)]">
-            Skill review
+            Skill review · human-in-the-loop governance
           </p>
           <h1 className="font-display text-3xl tracking-tight mt-1">
             {draft.title}
@@ -120,11 +151,37 @@ export default function SkillReviewPage() {
             <Badge>{data.conversation?.sourceRef}</Badge>
           </div>
         </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/simulator?skill=${data.skill.id}`}>
+            <Button variant="secondary">Run Test</Button>
+          </Link>
+          <Link href="/skills">
+            <Button variant="ghost">Back to library</Button>
+          </Link>
+        </div>
       </div>
+
+      {!!data.conflicts?.length && (
+        <div className="mt-6 rounded-md border border-[var(--warn)]/40 bg-[var(--warn-soft)] px-4 py-3 text-sm text-[var(--warn)]">
+          <p className="font-medium">Possible policy conflict detected</p>
+          {data.conflicts.map((c) => (
+            <p key={c.id} className="mt-1">
+              Overlaps with{" "}
+              <Link href={`/skills/${c.id}`} className="underline">
+                {c.title}
+              </Link>
+              : “{c.action}”
+            </p>
+          ))}
+        </div>
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <div className="rounded-md border border-[var(--line)] bg-white p-5">
           <h2 className="font-display text-lg">Source conversation</h2>
+          <p className="mt-1 text-xs text-[var(--ink-muted)]">
+            Traceability: highlighted text generated this rule.
+          </p>
           <pre className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
             {parts.length
               ? parts.map((p, i) =>
@@ -220,6 +277,61 @@ export default function SkillReviewPage() {
             >
               Reject
             </Button>
+          </div>
+
+          <div className="border-t border-[var(--line)] pt-4">
+            <p className="text-xs uppercase tracking-wide text-[var(--ink-muted)] mb-2">
+              Export for agents
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  download(
+                    `${data.skill.id}.json`,
+                    JSON.stringify(data.exports?.json || draft, null, 2)
+                  )
+                }
+              >
+                JSON
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  download(
+                    `${data.skill.id}.yaml`,
+                    data.exports?.yaml || "",
+                    "text/yaml"
+                  )
+                }
+              >
+                YAML
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  download(
+                    `${data.skill.id}-prompt.txt`,
+                    data.exports?.systemPrompt || "",
+                    "text/plain"
+                  )
+                }
+              >
+                System prompt
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() =>
+                  copyText("prompt", data.exports?.systemPrompt || "")
+                }
+              >
+                {copied === "prompt" ? "Copied" : "Copy prompt"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

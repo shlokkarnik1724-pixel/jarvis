@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
   Library,
@@ -11,6 +12,8 @@ import {
   Cable,
   Sparkles,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui";
@@ -25,6 +28,40 @@ const nav = [
   { href: "/billing", label: "Billing", icon: CreditCard },
 ];
 
+function NavLinks({
+  pathname,
+  onNavigate,
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <>
+      {nav.map((item) => {
+        const active =
+          pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition",
+              active
+                ? "bg-[var(--accent-soft)] text-[var(--accent-deep)] font-medium"
+                : "text-[var(--ink-muted)] hover:bg-black/[0.03] hover:text-[var(--ink)]"
+            )}
+          >
+            <Icon size={16} />
+            {item.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
 export function AppSidebar({
   orgName,
   userName,
@@ -34,6 +71,7 @@ export function AppSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -42,46 +80,74 @@ export function AppSidebar({
   }
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-[var(--line)] bg-white/80 backdrop-blur">
-      <div className="px-5 py-5 border-b border-[var(--line)]">
-        <Link href="/dashboard" className="font-display text-xl tracking-tight">
-          Tactix <span className="text-[var(--accent)]">AI</span>
-        </Link>
-        <p className="mt-2 text-xs text-[var(--ink-muted)] truncate">{orgName}</p>
-      </div>
-      <nav className="flex-1 p-3 space-y-1">
-        {nav.map((item) => {
-          const active =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition",
-                active
-                  ? "bg-[var(--accent-soft)] text-[var(--accent-deep)] font-medium"
-                  : "text-[var(--ink-muted)] hover:bg-black/[0.03] hover:text-[var(--ink)]"
-              )}
-            >
-              <Icon size={16} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="border-t border-[var(--line)] p-4">
-        <p className="text-sm font-medium truncate">{userName}</p>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-2 w-full justify-start px-0 text-[var(--ink-muted)]"
-          onClick={logout}
+    <>
+      <aside className="hidden md:flex h-full w-64 flex-col border-r border-[var(--line)] bg-white/80 backdrop-blur">
+        <div className="px-5 py-5 border-b border-[var(--line)]">
+          <Link href="/dashboard" className="font-display text-xl tracking-tight">
+            Tactix <span className="text-[var(--accent)]">AI</span>
+          </Link>
+          <p className="mt-2 text-xs text-[var(--ink-muted)] truncate">
+            {orgName}
+          </p>
+        </div>
+        <nav className="flex-1 p-3 space-y-1">
+          <NavLinks pathname={pathname} />
+        </nav>
+        <div className="border-t border-[var(--line)] p-4">
+          <p className="text-sm font-medium truncate">{userName}</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2 w-full justify-start px-0 text-[var(--ink-muted)]"
+            onClick={logout}
+          >
+            <LogOut size={14} /> Sign out
+          </Button>
+        </div>
+      </aside>
+
+      <div className="md:hidden border-b border-[var(--line)] bg-white px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        <div>
+          <span className="font-display text-lg">
+            Tactix <span className="text-[var(--accent)]">AI</span>
+          </span>
+          <p className="text-[10px] text-[var(--ink-muted)] truncate max-w-[180px]">
+            {orgName}
+          </p>
+        </div>
+        <button
+          type="button"
+          aria-label="Menu"
+          onClick={() => setOpen((v) => !v)}
+          className="rounded-md border border-[var(--line)] p-2"
         >
-          <LogOut size={14} /> Sign out
-        </Button>
+          {open ? <X size={18} /> : <Menu size={18} />}
+        </button>
       </div>
-    </aside>
+
+      {open && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/30" onClick={() => setOpen(false)}>
+          <div
+            className="absolute right-0 top-0 h-full w-72 bg-white p-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <nav className="space-y-1 mt-2">
+              <NavLinks pathname={pathname} onNavigate={() => setOpen(false)} />
+            </nav>
+            <div className="mt-6 border-t border-[var(--line)] pt-4">
+              <p className="text-sm font-medium">{userName}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 px-0"
+                onClick={logout}
+              >
+                <LogOut size={14} /> Sign out
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
