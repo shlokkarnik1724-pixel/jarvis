@@ -1,18 +1,17 @@
-# Tactix AI / OmniAgent OS — Company Brain MVP
+# Tactix AI — Company Brain MVP
 
-Hybrid platform that turns messy conversations into **self-updating, verifiable execution rules** with full provenance.
+Inspired by the “company brain” thesis: models are no longer the blocker — **scattered domain knowledge** is. Tactix pulls know-how from fragmented sources, structures it, keeps it current, and ships **executable skills files** for AI agents.
 
-## Blueprint layers (implemented)
+## What this MVP proves
 
-| Layer | In product |
+| Video thesis | In product |
 |---|---|
-| **Ingestion** | `/ingestion` — zero-touch listeners (Slack, Zendesk, Gmail, Gong) + passive tick simulator |
-| **Extraction** | `/extract` + skill review — JSON/YAML skills **and** human SOP steps |
-| **Memory** | `/graph` — bi-temporal knowledge graph (`valid_from` / `valid_to` / supersession) |
-| **Execution** | `/simulator` sandbox + exports to LangChain, CrewAI, AutoGen, webhook |
-| **Governance** | Split-screen source verification + approve/reject + audit trail |
-
-Master manifest: `GET /api/manifest` → OmniAgent_OS JSON.
+| Knowledge lives in Slack / email / tickets / heads | `/ingestion` + `/connectors` |
+| Structure it into something agents can use | `/extract` → skill JSON + human SOP |
+| Living map of how the company works | `/map` operating map |
+| Keep it current | Bi-temporal graph (`valid_from` / `valid_to` / supersession) |
+| Executable skills for agents | `/api/brain/pack` + LangChain / CrewAI / AutoGen exports |
+| Not just a chatbot | Provenance-linked Ask Brain + sandbox runtime |
 
 ## Run
 
@@ -21,18 +20,17 @@ npm install
 npm run dev
 ```
 
-1. Open http://localhost:3000 → **Launch company brain demo**
-2. Tour: Brain → Passive Ingestion → Knowledge Graph → Skill review (SOP + JSON) → Sandbox → export LangChain/CrewAI/AutoGen
+1. Open http://127.0.0.1:3000 → **Launch company brain MVP**
+2. Tour: Thesis → Operating Map → Pending skills → Sandbox → export skills pack
 
-## Real auth (Supabase + Google)
+## Demo path (90 seconds)
+
+1. `/demo` seeds Acme Inc and opens the **thesis tour**
+2. **Operating Map** — refunds, discounts, escalations, incidents as live IF/THEN skills
+3. Approve a pending skill (VIP escalation or SEV-2 cutover)
+4. Ask the brain / run the sandbox — only active skills apply
+5. Download the company skills pack for LangChain / CrewAI / AutoGen
+
+## Real auth (optional)
 
 See `/setup` and `.env.example`. Run `supabase/schema.sql` then `supabase/schema_omniagent_upgrade.sql`.
-
-## Investor demo script
-
-1. **Passive Ingestion** — show listeners + “Simulate passive tick”
-2. **Extract / Review** — split-screen source vs skill; switch to **Human SOP** tab
-3. **Approve** — conflicting nodes auto-invalidate (bi-temporal)
-4. **Knowledge Graph** — active vs superseded nodes with validity windows
-5. **Sandbox Runtime** — ask a question; only active skills apply
-6. **Export** — LangChain / CrewAI / AutoGen / Webhook packs

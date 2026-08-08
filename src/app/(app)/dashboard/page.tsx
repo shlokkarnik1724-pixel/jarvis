@@ -58,29 +58,33 @@ export default function DashboardPage() {
 
       <div className="mt-6 rounded-md border border-[var(--accent)]/25 bg-[var(--accent-soft)]/50 px-4 py-4 text-sm">
         <p className="font-medium text-[var(--accent-deep)]">
-          Investor walkthrough (2 minutes)
+          Company brain walkthrough (90 seconds)
         </p>
         <ol className="mt-2 list-decimal pl-5 space-y-1 text-[var(--ink)]">
           <li>
-            Open{" "}
+            Start with the{" "}
+            <Link href="/tour" className="underline">
+              thesis tour
+            </Link>{" "}
+            → then the{" "}
+            <Link href="/map" className="underline">
+              living operating map
+            </Link>
+            .
+          </li>
+          <li>
+            Approve a{" "}
             <Link href="/skills?status=pending" className="underline">
-              pending skills
+              pending skill
             </Link>{" "}
-            → approve one with the split-view review.
+            (split-screen source vs executable rule).
           </li>
           <li>
-            Go to{" "}
+            Prove it in the{" "}
             <Link href="/simulator" className="underline">
-              Simulator
+              sandbox
             </Link>{" "}
-            and ask: “Can I offer this enterprise client a 15% discount?”
-          </li>
-          <li>
-            Or{" "}
-            <Link href="/extract" className="underline">
-              paste a new thread
-            </Link>{" "}
-            and watch extraction end-to-end.
+            or download the full skills pack from the map.
           </li>
         </ol>
       </div>

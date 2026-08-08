@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireOrgSession } from "@/lib/auth";
 import { getAppSession } from "@/lib/session";
 import { id, now, readDb, updateDb } from "@/lib/db";
+import { isSkillActive } from "@/lib/graph";
 import { isSupabaseConfigured } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
 import OpenAI from "openai";
@@ -14,7 +15,7 @@ const schema = z.object({
 function localAnswer(question: string, orgId: string) {
   return readDb().then((db) => {
     const skills = db.skills.filter(
-      (s) => s.organizationId === orgId && s.status === "approved"
+      (s) => s.organizationId === orgId && isSkillActive(s)
     );
     const conversations = db.conversations.filter(
       (c) => c.organizationId === orgId
@@ -99,7 +100,7 @@ export async function POST(req: Request) {
     const apiKey = process.env.OPENAI_API_KEY?.trim();
     const db = await readDb();
     const skills = db.skills.filter(
-      (s) => s.organizationId === orgId && s.status === "approved"
+      (s) => s.organizationId === orgId && isSkillActive(s)
     );
     const context = skills
       .map(

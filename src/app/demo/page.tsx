@@ -18,8 +18,8 @@ export default function DemoLaunchPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Demo launch failed");
         if (cancelled) return;
-        setStatus("Opening Company Brain…");
-        router.replace("/brain");
+        setStatus("Opening thesis tour…");
+        router.replace("/tour");
         router.refresh();
       } catch (e) {
         if (cancelled) return;

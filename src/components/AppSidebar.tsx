@@ -18,12 +18,16 @@ import {
   Inbox,
   Radio,
   Network,
+  Map,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui";
 
 const nav = [
-  { href: "/brain", label: "Company Brain", icon: Brain },
+  { href: "/tour", label: "Thesis Tour", icon: Compass },
+  { href: "/map", label: "Operating Map", icon: Map },
+  { href: "/brain", label: "Ask Brain", icon: Brain },
   { href: "/ingestion", label: "Passive Ingestion", icon: Radio },
   { href: "/connectors", label: "Connectors", icon: Cable },
   { href: "/inbox", label: "Routing Inbox", icon: Inbox },
@@ -91,7 +95,7 @@ export function AppSidebar({
     <>
       <aside className="hidden md:flex h-full w-64 flex-col border-r border-[var(--line)] bg-white/80 backdrop-blur">
         <div className="px-5 py-5 border-b border-[var(--line)]">
-          <Link href="/brain" className="font-display text-xl tracking-tight">
+          <Link href="/map" className="font-display text-xl tracking-tight">
             Tactix <span className="text-[var(--accent)]">AI</span>
           </Link>
           <p className="mt-2 text-xs text-[var(--ink-muted)] truncate">

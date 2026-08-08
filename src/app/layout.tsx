@@ -13,9 +13,9 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Tactix AI — Living Operating System for Enterprise AI Agents",
+  title: "Tactix AI — Company Brain for AI Automation",
   description:
-    "Turn Slack threads, emails, and support tickets into structured, approved skills your AI agents can execute.",
+    "Pull scattered company know-how into a living operating map and executable skills files for AI agents.",
 };
 
 export default function RootLayout({

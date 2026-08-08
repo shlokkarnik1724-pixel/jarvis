@@ -153,3 +153,31 @@ a {
     radial-gradient(800px 400px at 100% 0%, rgba(15, 122, 108, 0.08), transparent 50%),
     var(--bg);
 }
+
+.hero-mesh {
+  background-image:
+    linear-gradient(rgba(15, 122, 108, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 122, 108, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 60% 40%, black 20%, transparent 70%);
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 5s ease-in-out infinite;
+}
+
+.tour-panel {
+  animation: fade-up 0.45s ease both;
+}
