@@ -1,8 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { ArrowRight, Play, Sparkles, Brain } from "lucide-react";
 
 const SAMPLE_SLACK = `Slack · Teams · Zoho · Zoom · Sheets
@@ -23,29 +19,6 @@ const SAMPLE_SKILL = `{
 }`;
 
 export default function LandingPage() {
-  const router = useRouter();
-  const [loadingDemo, setLoadingDemo] = useState(false);
-  const [error, setError] = useState("");
-
-  async function launchDemo() {
-    setLoadingDemo(true);
-    setError("");
-    try {
-      const res = await fetch("/api/demo/launch", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Could not launch demo");
-        setLoadingDemo(false);
-        return;
-      }
-      router.push("/brain");
-      router.refresh();
-    } catch {
-      setError("Network error launching demo");
-      setLoadingDemo(false);
-    }
-  }
-
   return (
     <div className="min-h-screen">
       <header className="absolute inset-x-0 top-0 z-20 px-6 py-5 flex items-center justify-between max-w-6xl mx-auto w-full">
@@ -65,12 +38,12 @@ export default function LandingPage() {
           >
             Log in
           </Link>
-          <Link
-            href="/signup"
+          <a
+            href="/demo"
             className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-deep)]"
           >
-            Start Free
-          </Link>
+            Open demo
+          </a>
         </div>
       </header>
 
@@ -93,15 +66,13 @@ export default function LandingPage() {
             your company already uses.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 animate-fade-up-delay-2">
-            <button
-              type="button"
-              onClick={launchDemo}
-              disabled={loadingDemo}
-              className="inline-flex items-center gap-2 rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+            <a
+              href="/demo"
+              className="inline-flex items-center gap-2 rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-medium text-white hover:opacity-90"
             >
               <Play size={16} />
-              {loadingDemo ? "Opening brain…" : "Launch company brain demo"}
-            </button>
+              Open running demo
+            </a>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white/70 px-5 py-3 text-sm font-medium backdrop-blur hover:bg-white"
@@ -115,9 +86,13 @@ export default function LandingPage() {
               <Sparkles size={16} /> Free converter <ArrowRight size={16} />
             </Link>
           </div>
-          {error && (
-            <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
-          )}
+          <p className="mt-4 text-xs text-[var(--ink-muted)]">
+            Fastest path: open{" "}
+            <a href="/demo" className="underline text-[var(--accent)]">
+              /demo
+            </a>{" "}
+            after <code>npm run dev</code>.
+          </p>
         </div>
       </section>
 
@@ -181,14 +156,12 @@ export default function LandingPage() {
 
       <section className="py-16 px-6 atmosphere">
         <div className="mx-auto max-w-6xl flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={launchDemo}
-            disabled={loadingDemo}
-            className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--accent-deep)] disabled:opacity-60"
+          <a
+            href="/demo"
+            className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--accent-deep)]"
           >
-            <Play size={16} /> Launch demo
-          </button>
+            <Play size={16} /> Open running demo
+          </a>
           <Link
             href="/setup"
             className="inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-white px-5 py-3 text-sm font-medium"
