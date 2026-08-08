@@ -1,187 +1,111 @@
-export type Role = "admin" | "member";
+export type MemberRole = "owner" | "admin" | "member";
+export type GameType = "mafia" | "trivia" | "prediction_league" | "myth_buster";
+export type GameStatus = "lobby" | "active" | "completed" | "cancelled";
+export type ScoreType = "game_win" | "event_attendance" | "custom" | "roast_toast";
 
-export type SkillStatus = "pending" | "approved" | "rejected" | "superseded";
-
-export type ConnectorStatus =
-  | "connected"
-  | "syncing"
-  | "disconnected"
-  | "coming_soon";
-
-export type SkillCategory =
-  | "Refunds"
-  | "Escalation"
-  | "Discounting"
-  | "Incident Response"
-  | "Other";
-
-export interface User {
+export interface CircleUser {
   id: string;
   email: string;
   name: string;
-  passwordHash: string;
-  createdAt: string;
+  avatarUrl: string | null;
 }
 
-export interface Organization {
-  id: string;
-  name: string;
-  industry: string;
-  teamSize: string;
-  primaryUseCase: string;
-  inviteCode: string;
-  createdBy: string;
-  createdAt: string;
-}
-
-export interface Membership {
-  id: string;
+export interface CircleMemberView {
   userId: string;
-  organizationId: string;
-  role: Role;
-  createdAt: string;
-}
-
-export interface Connector {
-  id: string;
-  organizationId: string;
-  provider: string;
+  circleId: string;
+  nickname: string | null;
+  role: MemberRole;
   name: string;
-  status: ConnectorStatus;
-  meta?: Record<string, unknown>;
-  lastSyncedAt?: string | null;
-  createdAt: string;
+  email: string;
+  avatarUrl: string | null;
 }
 
-/** @deprecated use Connector */
-export type DataSource = Connector & { type?: string };
-
-export interface Conversation {
+export interface CircleSummary {
   id: string;
-  organizationId: string;
-  dataSourceId: string;
-  connectorId?: string;
-  rawText: string;
-  sourceRef: string;
-  createdAt: string;
+  name: string;
+  inviteCode: string;
 }
 
-export interface SopStep {
-  step: number;
-  title: string;
-  detail: string;
-  owner?: string;
-}
-
-export interface SkillSchema {
-  title: string;
-  condition: string;
-  action: string;
-  category: SkillCategory;
-  confidence: number;
-  source_excerpt: string;
-  flagged_fields: string[];
-  sop_steps?: SopStep[];
-}
-
-export interface Skill {
+export interface EventView {
   id: string;
-  organizationId: string;
-  conversationId: string;
+  circleId: string;
   title: string;
-  jsonSchema: SkillSchema;
-  status: SkillStatus;
-  confidence: number;
-  category: SkillCategory;
-  /** Bi-temporal: when this rule became valid */
-  validFrom: string;
-  /** Bi-temporal: when this rule stopped being valid (null = still active) */
-  validTo: string | null;
-  supersededBy: string | null;
+  date: string;
+  location: string | null;
+  tags: string[];
+  checkinCount: number;
+  shoppingCount: number;
+  claimedCount: number;
+  checkedInByMe: boolean;
+}
+
+export interface ShoppingItemView {
+  id: string;
+  eventId: string;
+  itemName: string;
+  quantity: string | null;
+  claimerId: string | null;
+  claimerName: string | null;
+}
+
+export interface PhotoView {
+  id: string;
+  circleId: string;
+  uploaderId: string;
+  uploaderName: string;
+  mimeType: string;
   createdAt: string;
+  captionHint: string | null;
+}
+
+export interface LeaderboardRow {
+  userId: string;
+  name: string;
+  nickname: string | null;
+  totalPoints: number;
+  breakdown: Partial<Record<ScoreType, number>>;
+}
+
+export interface TabEntryView {
+  id: string;
+  circleId: string;
+  payerId: string;
+  payerName: string;
+  amount: number;
+  description: string;
+  createdAt: string;
+}
+
+export interface Settlement {
+  fromUserId: string;
+  fromName: string;
+  toUserId: string;
+  toName: string;
+  amount: number;
+}
+
+export interface RoastToastView {
+  id: string;
+  circleId: string;
+  kind: "roast" | "toast";
+  body: string;
+  voteScore: number;
+  createdAt: string;
+  myVote: number | null;
+}
+
+export interface GameSessionView {
+  id: string;
+  circleId: string;
+  gameType: GameType;
+  status: GameStatus;
+  state: Record<string, unknown>;
   updatedAt: string;
 }
 
-export interface SkillVersion {
-  id: string;
-  skillId: string;
-  jsonSchema: SkillSchema;
-  editedBy: string;
-  createdAt: string;
-}
-
-export interface AgentTestRun {
-  id: string;
-  skillId: string;
-  organizationId: string;
-  userQuery: string;
-  agentResponse: string;
-  createdAt: string;
-}
-
-export interface ActivityItem {
-  id: string;
-  organizationId: string;
-  message: string;
-  createdAt: string;
-}
-
-export interface RoutingItem {
-  id: string;
-  organizationId: string;
-  title: string;
-  summary: string;
-  suggestedOwner: string;
-  channel: string;
-  priority: "low" | "normal" | "high" | "urgent";
-  status: "open" | "routed" | "done";
-  sourceRef: string;
-  createdAt: string;
-}
-
-export interface BrainMessage {
-  id: string;
-  organizationId: string;
-  userId?: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  citations: { skillId?: string; title: string; sourceRef?: string }[];
-  createdAt: string;
-}
-
-/** Zero-touch passive ingestion event */
-export interface IngestionEvent {
-  id: string;
-  organizationId: string;
-  source: string;
-  channel: string;
-  summary: string;
-  rawSnippet: string;
-  decisionDetected: boolean;
-  skillId?: string | null;
-  createdAt: string;
-}
-
-export interface Database {
-  users: User[];
-  organizations: Organization[];
-  memberships: Membership[];
-  dataSources: Connector[];
-  connectors: Connector[];
-  conversations: Conversation[];
-  skills: Skill[];
-  skillVersions: SkillVersion[];
-  agentTestRuns: AgentTestRun[];
-  activities: ActivityItem[];
-  routingItems: RoutingItem[];
-  brainMessages: BrainMessage[];
-  ingestionEvents: IngestionEvent[];
-}
-
-export interface SessionPayload {
-  userId: string;
-  email: string;
-  name: string;
-  organizationId?: string;
-  role?: Role;
+export interface SessionContext {
+  user: CircleUser;
+  circle: CircleSummary | null;
+  membership: CircleMemberView | null;
+  demo: boolean;
 }
