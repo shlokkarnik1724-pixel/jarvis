@@ -1,8 +1,23 @@
 export function isSupabaseConfigured(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || "";
+  if (!url || !key) return false;
+  // Treat .env.example placeholders as unconfigured so local demo JWT works
+  if (
+    url.includes("YOUR_PROJECT") ||
+    key === "eyJ..." ||
+    key.startsWith("eyJ...") ||
+    key.length < 40
+  ) {
+    return false;
+  }
+  try {
+    const host = new URL(url).hostname;
+    if (!host.includes("supabase")) return false;
+  } catch {
+    return false;
+  }
+  return true;
 }
 
 export function siteUrl(): string {
