@@ -27,7 +27,7 @@ function getSecret() {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const needsAuth = protectedPrefixes.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
