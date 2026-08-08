@@ -90,4 +90,6 @@ Use this exact URL:
 
 **http://127.0.0.1:3000/demo**
 
+That seeds Acme and opens the **thesis tour** → then use **Operating Map**, approve a skill, and try the **Sandbox**.
+
 Not `https://`, not a random port, not just `localhost` without the server running.
