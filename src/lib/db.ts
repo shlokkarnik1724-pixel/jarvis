@@ -20,6 +20,7 @@ const emptyDb = (): Database => ({
   routingItems: [],
   brainMessages: [],
   ingestionEvents: [],
+  opsRequests: [],
 });
 
 function migrate(db: Database): Database {
@@ -28,6 +29,7 @@ function migrate(db: Database): Database {
   if (!db.routingItems) db.routingItems = [];
   if (!db.brainMessages) db.brainMessages = [];
   if (!db.ingestionEvents) db.ingestionEvents = [];
+  if (!db.opsRequests) db.opsRequests = [];
   if (db.connectors.length === 0 && db.dataSources.length > 0) {
     db.connectors = db.dataSources.map((d) => ({
       ...d,

@@ -8,7 +8,6 @@ import {
   Library,
   FlaskConical,
   Settings,
-  CreditCard,
   Cable,
   Sparkles,
   LogOut,
@@ -16,24 +15,28 @@ import {
   X,
   Brain,
   Inbox,
-  Radio,
   Network,
+  Map,
+  Compass,
+  Command,
+  Rocket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui";
 
 const nav = [
-  { href: "/brain", label: "Company Brain", icon: Brain },
-  { href: "/ingestion", label: "Passive Ingestion", icon: Radio },
-  { href: "/connectors", label: "Connectors", icon: Cable },
-  { href: "/inbox", label: "Routing Inbox", icon: Inbox },
-  { href: "/graph", label: "Knowledge Graph", icon: Network },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/command", label: "Command Center", icon: Command },
+  { href: "/brain", label: "Ask Brain", icon: Brain },
+  { href: "/connectors", label: "Sources", icon: Cable },
+  { href: "/inbox", label: "Ops Inbox", icon: Inbox },
+  { href: "/map", label: "Operating Map", icon: Map },
   { href: "/skills", label: "Skill Library", icon: Library },
   { href: "/extract", label: "Extract Skill", icon: Sparkles },
-  { href: "/simulator", label: "Sandbox Runtime", icon: FlaskConical },
-  { href: "/settings", label: "Team & Settings", icon: Settings },
-  { href: "/billing", label: "Billing", icon: CreditCard },
+  { href: "/simulator", label: "Sandbox", icon: FlaskConical },
+  { href: "/graph", label: "Knowledge Graph", icon: Network },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/tour", label: "Thesis Tour", icon: Compass },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 function NavLinks({
@@ -57,8 +60,8 @@ function NavLinks({
             className={cn(
               "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition",
               active
-                ? "bg-[var(--accent-soft)] text-[var(--accent-deep)] font-medium"
-                : "text-[var(--ink-muted)] hover:bg-black/[0.03] hover:text-[var(--ink)]"
+                ? "bg-[var(--accent-soft)] text-[var(--hud-cyan)] font-medium border border-[var(--line)]"
+                : "text-[var(--ink-muted)] hover:bg-white/[0.04] hover:text-[var(--ink)]"
             )}
           >
             <Icon size={16} />
@@ -89,15 +92,15 @@ export function AppSidebar({
 
   return (
     <>
-      <aside className="hidden md:flex h-full w-64 flex-col border-r border-[var(--line)] bg-white/80 backdrop-blur">
+      <aside className="hidden md:flex h-full w-64 flex-col border-r border-[var(--line)] bg-[#071018]/90 backdrop-blur">
         <div className="px-5 py-5 border-b border-[var(--line)]">
-          <Link href="/brain" className="font-display text-xl tracking-tight">
-            Tactix <span className="text-[var(--accent)]">AI</span>
+          <Link href="/command" className="font-display text-lg tracking-[0.12em]">
+            TACTIX <span className="text-[var(--hud-cyan)]">AI</span>
           </Link>
-          <p className="mt-2 text-xs text-[var(--ink-muted)] truncate">
-            {orgName}
+          <p className="mt-2 text-xs text-[var(--ink-muted)] truncate">{orgName}</p>
+          <p className="text-[10px] text-[var(--hud-amber)] mt-1 flex items-center gap-1 tracking-[0.2em] uppercase">
+            <Rocket size={10} /> Company brain online
           </p>
-          <p className="text-[10px] text-[var(--accent)] mt-1">Company brain</p>
         </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           <NavLinks pathname={pathname} />
@@ -115,10 +118,10 @@ export function AppSidebar({
         </div>
       </aside>
 
-      <div className="md:hidden border-b border-[var(--line)] bg-white px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+      <div className="md:hidden border-b border-[var(--line)] bg-[#071018] px-4 py-3 flex items-center justify-between sticky top-0 z-30">
         <div>
-          <span className="font-display text-lg">
-            Tactix <span className="text-[var(--accent)]">AI</span>
+          <span className="font-display text-sm tracking-[0.12em]">
+            TACTIX <span className="text-[var(--hud-cyan)]">AI</span>
           </span>
           <p className="text-[10px] text-[var(--ink-muted)] truncate max-w-[180px]">
             {orgName}
@@ -136,11 +139,11 @@ export function AppSidebar({
 
       {open && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/30"
+          className="md:hidden fixed inset-0 z-40 bg-black/60"
           onClick={() => setOpen(false)}
         >
           <div
-            className="absolute right-0 top-0 h-full w-72 bg-white p-4 shadow-xl overflow-y-auto"
+            className="absolute right-0 top-0 h-full w-72 bg-[#071018] p-4 shadow-xl overflow-y-auto border-l border-[var(--line)]"
             onClick={(e) => e.stopPropagation()}
           >
             <nav className="space-y-1 mt-2">

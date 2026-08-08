@@ -162,6 +162,74 @@ export interface IngestionEvent {
   createdAt: string;
 }
 
+export type OpsSource =
+  | "slack"
+  | "google_sheets"
+  | "freshdesk"
+  | "looker"
+  | "whatsapp"
+  | "email"
+  | "zoom";
+
+export type OpsRequestStatus =
+  | "detected"
+  | "needs_correction"
+  | "corrected"
+  | "approved"
+  | "executing"
+  | "shipped"
+  | "resolved"
+  | "rejected";
+
+export interface OpsCorrection {
+  field: string;
+  from: string;
+  to: string;
+  reason: string;
+}
+
+export interface OpsShipment {
+  id: string;
+  stage:
+    | "intake"
+    | "validated"
+    | "routed"
+    | "in_progress"
+    | "fulfilled"
+    | "blocked";
+  eta?: string;
+  owner?: string;
+  trackingNote?: string;
+}
+
+export interface OpsRequest {
+  id: string;
+  organizationId: string;
+  source: OpsSource;
+  channel: string;
+  title: string;
+  rawText: string;
+  detectedIntent: string;
+  category:
+    | "Shipment"
+    | "Refund"
+    | "Discount"
+    | "Support"
+    | "Analytics"
+    | "Escalation"
+    | "Other";
+  priority: "low" | "normal" | "high" | "urgent";
+  status: OpsRequestStatus;
+  confidence: number;
+  corrections: OpsCorrection[];
+  correctedPayload?: Record<string, string>;
+  shipment?: OpsShipment;
+  skillId?: string | null;
+  suggestedAction: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Database {
   users: User[];
   organizations: Organization[];
@@ -176,6 +244,7 @@ export interface Database {
   routingItems: RoutingItem[];
   brainMessages: BrainMessage[];
   ingestionEvents: IngestionEvent[];
+  opsRequests: OpsRequest[];
 }
 
 export interface SessionPayload {

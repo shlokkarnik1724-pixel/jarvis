@@ -8,6 +8,9 @@ const COOKIE_NAME = "tactix_session";
 const protectedPrefixes = [
   "/dashboard",
   "/brain",
+  "/command",
+  "/map",
+  "/tour",
   "/connectors",
   "/inbox",
   "/ingestion",
@@ -27,6 +30,17 @@ function getSecret() {
   );
 }
 
+async function verifyLocalSession(request: NextRequest) {
+  const token = request.cookies.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, getSecret());
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const needsAuth = protectedPrefixes.some(
@@ -37,7 +51,12 @@ export async function proxy(request: NextRequest) {
   if (isSupabaseConfigured()) {
     const { supabaseResponse, user, supabase } = await updateSession(request);
 
+    // Fall back to local demo JWT when Supabase session is absent
     if (needsAuth && !user) {
+      const local = await verifyLocalSession(request);
+      if (local?.organizationId) {
+        return NextResponse.next();
+      }
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("next", pathname);
@@ -56,7 +75,7 @@ export async function proxy(request: NextRequest) {
 
       if (pathname.startsWith("/onboarding") && hasOrg) {
         const url = request.nextUrl.clone();
-        url.pathname = "/brain";
+        url.pathname = "/command";
         return NextResponse.redirect(url);
       }
 
@@ -73,42 +92,38 @@ export async function proxy(request: NextRequest) {
   // Local JWT fallback (demo / before Supabase keys are added)
   if (!needsAuth) return NextResponse.next();
 
-  const token = request.cookies.get(COOKIE_NAME)?.value;
-  if (!token) {
+  const payload = await verifyLocalSession(request);
+  if (!payload) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
 
-  try {
-    const { payload } = await jwtVerify(token, getSecret());
-    const hasOrg = Boolean(payload.organizationId);
+  const hasOrg = Boolean(payload.organizationId);
 
-    if (pathname.startsWith("/onboarding") && hasOrg) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/brain";
-      return NextResponse.redirect(url);
-    }
-
-    if (!pathname.startsWith("/onboarding") && !hasOrg) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/onboarding";
-      return NextResponse.redirect(url);
-    }
-
-    return NextResponse.next();
-  } catch {
+  if (pathname.startsWith("/onboarding") && hasOrg) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/command";
     return NextResponse.redirect(url);
   }
+
+  if (!pathname.startsWith("/onboarding") && !hasOrg) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/onboarding";
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     "/dashboard/:path*",
     "/brain/:path*",
+    "/command/:path*",
+    "/map/:path*",
+    "/tour/:path*",
     "/connectors/:path*",
     "/inbox/:path*",
     "/ingestion/:path*",

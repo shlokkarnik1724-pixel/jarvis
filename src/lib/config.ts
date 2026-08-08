@@ -1,8 +1,23 @@
 export function isSupabaseConfigured(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || "";
+  if (!url || !key) return false;
+  // Treat .env.example placeholders as unconfigured so local demo JWT works
+  if (
+    url.includes("YOUR_PROJECT") ||
+    key === "eyJ..." ||
+    key.startsWith("eyJ...") ||
+    key.length < 40
+  ) {
+    return false;
+  }
+  try {
+    const host = new URL(url).hostname;
+    if (!host.includes("supabase")) return false;
+  } catch {
+    return false;
+  }
+  return true;
 }
 
 export function siteUrl(): string {
@@ -21,27 +36,39 @@ export const CONNECTOR_CATALOG = [
     category: "Chat",
   },
   {
+    provider: "whatsapp",
+    name: "WhatsApp Web",
+    blurb: "Customer chats + driver / dispatch messages",
+    category: "Chat",
+  },
+  {
+    provider: "freshdesk",
+    name: "Freshdesk",
+    blurb: "Support tickets, priorities, and macros",
+    category: "Ops",
+  },
+  {
+    provider: "google_sheets",
+    name: "Google Sheets",
+    blurb: "Shipments tracker, policy tables, refund logs",
+    category: "Data",
+  },
+  {
+    provider: "looker",
+    name: "Looker Studio",
+    blurb: "Live KPIs, SLA boards, anomaly signals",
+    category: "Data",
+  },
+  {
     provider: "microsoft_teams",
     name: "Microsoft Teams",
     blurb: "Teams chats, channels, and meeting notes",
     category: "Chat",
   },
   {
-    provider: "google_chat",
-    name: "Google Chat / Spaces",
-    blurb: "Workspace conversations and spaces",
-    category: "Chat",
-  },
-  {
     provider: "gmail",
     name: "Gmail",
     blurb: "Email threads with operational decisions",
-    category: "Email",
-  },
-  {
-    provider: "outlook",
-    name: "Outlook",
-    blurb: "Microsoft 365 mail and calendar context",
     category: "Email",
   },
   {
@@ -57,21 +84,9 @@ export const CONNECTOR_CATALOG = [
     category: "Ops",
   },
   {
-    provider: "google_sheets",
-    name: "Google Sheets",
-    blurb: "Policy tables, pricing grids, runbooks",
-    category: "Data",
-  },
-  {
     provider: "zoom",
     name: "Zoom",
     blurb: "Meeting transcripts and action items",
-    category: "Meetings",
-  },
-  {
-    provider: "fireflies",
-    name: "Fireflies / Gong",
-    blurb: "Recorded calls → decision extraction",
     category: "Meetings",
   },
   {

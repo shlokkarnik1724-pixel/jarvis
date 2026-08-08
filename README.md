@@ -1,18 +1,6 @@
-# Tactix AI / OmniAgent OS — Company Brain MVP
+# Tactix AI — JARVIS Company Brain MVP
 
-Hybrid platform that turns messy conversations into **self-updating, verifiable execution rules** with full provenance.
-
-## Blueprint layers (implemented)
-
-| Layer | In product |
-|---|---|
-| **Ingestion** | `/ingestion` — zero-touch listeners (Slack, Zendesk, Gmail, Gong) + passive tick simulator |
-| **Extraction** | `/extract` + skill review — JSON/YAML skills **and** human SOP steps |
-| **Memory** | `/graph` — bi-temporal knowledge graph (`valid_from` / `valid_to` / supersession) |
-| **Execution** | `/simulator` sandbox + exports to LangChain, CrewAI, AutoGen, webhook |
-| **Governance** | Split-screen source verification + approve/reject + audit trail |
-
-Master manifest: `GET /api/manifest` → OmniAgent_OS JSON.
+One AI brain for the whole business: pull Slack, Google Sheets, Freshdesk, Looker Studio, and WhatsApp — detect requests, correct messy data, run shipments/ops.
 
 ## Run
 
@@ -21,18 +9,18 @@ npm install
 npm run dev
 ```
 
-1. Open http://localhost:3000 → **Launch company brain demo**
-2. Tour: Brain → Passive Ingestion → Knowledge Graph → Skill review (SOP + JSON) → Sandbox → export LangChain/CrewAI/AutoGen
+Open http://127.0.0.1:3000 → **Launch company brain** → Command Center.
 
-## Real auth (Supabase + Google)
+## What the brain does
 
-See `/setup` and `.env.example`. Run `supabase/schema.sql` then `supabase/schema_omniagent_upgrade.sql`.
+1. **Pull** live feeds from connected business systems
+2. **Detect** requests (shipments, refunds, discounts, escalations, WISMO, KPI alerts)
+3. **Correct** typos, missing SKUs, bad discount %, incomplete tracking IDs
+4. **Execute** — approve → route → ship / resolve from one HUD
 
-## Investor demo script
+## Demo path
 
-1. **Passive Ingestion** — show listeners + “Simulate passive tick”
-2. **Extract / Review** — split-screen source vs skill; switch to **Human SOP** tab
-3. **Approve** — conflicting nodes auto-invalidate (bi-temporal)
-4. **Knowledge Graph** — active vs superseded nodes with validity windows
-5. **Sandbox Runtime** — ask a question; only active skills apply
-6. **Export** — LangChain / CrewAI / AutoGen / Webhook packs
+1. `/demo` boots Acme with Slack + Sheets + Freshdesk + Looker + WhatsApp connected
+2. **Command Center** — neural orbit, live request stream, apply corrections, execute
+3. Paste any message from WhatsApp/Slack/Sheet/Freshdesk/Looker into **Feed the brain**
+4. Hit **Neural pull** to simulate the next live event

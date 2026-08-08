@@ -245,9 +245,19 @@ function AuthForm({
           className="mt-4 w-full text-sm text-[var(--accent-deep)] font-medium hover:underline"
           onClick={async () => {
             setLoading(true);
-            await fetch("/api/demo/launch", { method: "POST" });
-            router.push("/brain");
-            router.refresh();
+            setError("");
+            try {
+              const res = await fetch("/api/demo/launch", { method: "POST" });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || "Demo launch failed");
+              router.push("/command");
+              router.refresh();
+            } catch (err) {
+              setError(
+                err instanceof Error ? err.message : "Could not start demo"
+              );
+              setLoading(false);
+            }
           }}
         >
           Preview without account (local demo workspace) →

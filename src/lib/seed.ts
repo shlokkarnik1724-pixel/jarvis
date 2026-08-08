@@ -4,6 +4,7 @@ import type {
   Conversation,
   IngestionEvent,
   Membership,
+  OpsRequest,
   Organization,
   RoutingItem,
   Skill,
@@ -13,6 +14,7 @@ import type {
 import { id, now } from "./db";
 import { CONNECTOR_CATALOG } from "./config";
 import { withSop } from "./sop";
+import { analyzeAndCorrectRequest } from "./ops-engine";
 
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString();
@@ -67,10 +69,12 @@ export function buildDemoSeed(userId: string) {
 
   const connectedProviders = new Set([
     "slack",
-    "microsoft_teams",
     "google_sheets",
+    "freshdesk",
+    "looker",
+    "whatsapp",
+    "microsoft_teams",
     "zoom",
-    "zoho",
     "manual",
   ]);
 
@@ -374,7 +378,8 @@ export function buildDemoSeed(userId: string) {
     {
       id: id("act"),
       organizationId: org.id,
-      message: "Company brain online — Slack, Teams, Zoho, Sheets, Zoom connected",
+      message:
+        "Company brain online — Slack, Sheets, Freshdesk, Looker, WhatsApp linked",
       createdAt: minutesAgo(125),
     },
     {
@@ -387,22 +392,89 @@ export function buildDemoSeed(userId: string) {
     {
       id: id("act"),
       organizationId: org.id,
-      message: "Routed VIP checkout issue → Riley (on-call) via Teams",
-      createdAt: minutesAgo(25),
+      message: "Corrected WhatsApp WISMO — missing tracking ID flagged",
+      createdAt: minutesAgo(18),
     },
     {
       id: id("act"),
       organizationId: org.id,
-      message: "Ingested Zoom QBR transcript — 3 decision candidates flagged",
-      createdAt: minutesAgo(10),
+      message: "Sheets · Shipments Tracker synced — 3 rows need AI correction",
+      createdAt: minutesAgo(12),
     },
     {
       id: id("act"),
       organizationId: org.id,
-      message: "Google Sheets · Policy Matrix synced (read-only)",
-      createdAt: minutesAgo(20),
+      message: "Looker SLA board → ops attention (breach risk)",
+      createdAt: minutesAgo(6),
     },
   ];
+
+  const rawOps: {
+    source: OpsRequest["source"];
+    channel: string;
+    rawText: string;
+    mins: number;
+  }[] = [
+    {
+      source: "google_sheets",
+      channel: "Shipments Tracker · row 184",
+      rawText:
+        "Dispatch ASAP to Mumbai — 40 boxes, adress: Andheri East, pin code 40006, customer wants urgentttt delivery, no SKU listed",
+      mins: 14,
+    },
+    {
+      source: "whatsapp",
+      channel: "Customer Line · +91…8821",
+      rawText:
+        "Hi where is my order? Pls check. I ordered last week but no update 😕",
+      mins: 9,
+    },
+    {
+      source: "slack",
+      channel: "#sales-questions",
+      rawText:
+        "Alex: Can I give Globex 22% to close today? They're Enterprise.",
+      mins: 22,
+    },
+    {
+      source: "freshdesk",
+      channel: "Ticket #90412",
+      rawText:
+        "Enterprise customer #4821 requesting full refund 45 days after purchase after P1 outage. Amount $2,400.",
+      mins: 31,
+    },
+    {
+      source: "looker",
+      channel: "SLA Board · Support",
+      rawText:
+        "KPI alert: first-response SLA breach risk — VIP queue red, conversion drop on checkout funnel 18%.",
+      mins: 5,
+    },
+    {
+      source: "whatsapp",
+      channel: "Driver Dispatch",
+      rawText:
+        "Driver: TRK-ACME441 stuck at hub, customer calling. Need reroute?",
+      mins: 3,
+    },
+  ];
+
+  const opsRequests: OpsRequest[] = rawOps.map((row) => {
+    const analyzed = analyzeAndCorrectRequest({
+      source: row.source,
+      channel: row.channel,
+      rawText: row.rawText,
+      skills,
+    });
+    const ts = minutesAgo(row.mins);
+    return {
+      id: id("ops"),
+      organizationId: org.id,
+      ...analyzed,
+      createdAt: ts,
+      updatedAt: ts,
+    };
+  });
 
   return {
     org,
@@ -415,6 +487,7 @@ export function buildDemoSeed(userId: string) {
     activities,
     routingItems,
     ingestionEvents,
+    opsRequests,
     threads: THREADS,
   };
 }
