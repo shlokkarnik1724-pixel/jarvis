@@ -1,0 +1,88 @@
+import { promises as fs } from "fs";
+import path from "path";
+import { nanoid } from "nanoid";
+import type { Database } from "./types";
+
+const DATA_DIR = path.join(process.cwd(), "data");
+const DB_PATH = path.join(DATA_DIR, "tactix.json");
+
+const emptyDb = (): Database => ({
+  users: [],
+  organizations: [],
+  memberships: [],
+  dataSources: [],
+  connectors: [],
+  conversations: [],
+  skills: [],
+  skillVersions: [],
+  agentTestRuns: [],
+  activities: [],
+  routingItems: [],
+  brainMessages: [],
+  ingestionEvents: [],
+});
+
+function migrate(db: Database): Database {
+  if (!db.connectors) db.connectors = [];
+  if (!db.dataSources) db.dataSources = [];
+  if (!db.routingItems) db.routingItems = [];
+  if (!db.brainMessages) db.brainMessages = [];
+  if (!db.ingestionEvents) db.ingestionEvents = [];
+  if (db.connectors.length === 0 && db.dataSources.length > 0) {
+    db.connectors = db.dataSources.map((d) => ({
+      ...d,
+      provider: d.provider || "manual",
+      name: d.name,
+    }));
+  }
+  // Backfill bi-temporal fields on older skills
+  for (const s of db.skills || []) {
+    if (!s.validFrom) s.validFrom = s.createdAt;
+    if (s.validTo === undefined) s.validTo = null;
+    if (s.supersededBy === undefined) s.supersededBy = null;
+  }
+  return db;
+}
+
+let writeQueue: Promise<void> = Promise.resolve();
+
+async function ensureDb(): Promise<void> {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  try {
+    await fs.access(DB_PATH);
+  } catch {
+    await fs.writeFile(DB_PATH, JSON.stringify(emptyDb(), null, 2), "utf8");
+  }
+}
+
+export async function readDb(): Promise<Database> {
+  await ensureDb();
+  const raw = await fs.readFile(DB_PATH, "utf8");
+  return migrate(JSON.parse(raw) as Database);
+}
+
+export async function writeDb(db: Database): Promise<void> {
+  await ensureDb();
+  const next = writeQueue.then(() =>
+    fs.writeFile(DB_PATH, JSON.stringify(db, null, 2), "utf8")
+  );
+  writeQueue = next.catch(() => undefined);
+  await next;
+}
+
+export async function updateDb<T>(
+  mutator: (db: Database) => T | Promise<T>
+): Promise<T> {
+  const db = await readDb();
+  const result = await mutator(db);
+  await writeDb(db);
+  return result;
+}
+
+export function id(prefix?: string): string {
+  return prefix ? `${prefix}_${nanoid(10)}` : nanoid(12);
+}
+
+export function now(): string {
+  return new Date().toISOString();
+}
