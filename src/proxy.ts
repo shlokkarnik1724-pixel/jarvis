@@ -8,6 +8,7 @@ const COOKIE_NAME = "tactix_session";
 const protectedPrefixes = [
   "/dashboard",
   "/brain",
+  "/command",
   "/map",
   "/tour",
   "/connectors",
@@ -74,7 +75,7 @@ export async function proxy(request: NextRequest) {
 
       if (pathname.startsWith("/onboarding") && hasOrg) {
         const url = request.nextUrl.clone();
-        url.pathname = "/map";
+        url.pathname = "/command";
         return NextResponse.redirect(url);
       }
 
@@ -103,7 +104,7 @@ export async function proxy(request: NextRequest) {
 
   if (pathname.startsWith("/onboarding") && hasOrg) {
     const url = request.nextUrl.clone();
-    url.pathname = "/map";
+    url.pathname = "/command";
     return NextResponse.redirect(url);
   }
 
@@ -120,6 +121,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/brain/:path*",
+    "/command/:path*",
     "/map/:path*",
     "/tour/:path*",
     "/connectors/:path*",

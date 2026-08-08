@@ -250,7 +250,7 @@ function AuthForm({
               const res = await fetch("/api/demo/launch", { method: "POST" });
               const data = await res.json();
               if (!res.ok) throw new Error(data.error || "Demo launch failed");
-              router.push("/tour");
+              router.push("/command");
               router.refresh();
             } catch (err) {
               setError(

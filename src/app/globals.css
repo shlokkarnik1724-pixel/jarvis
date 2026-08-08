@@ -1,31 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f3f6f8;
-  --bg-elevated: #ffffff;
-  --ink: #0c1a24;
-  --ink-muted: #5a6b76;
-  --line: #d7e0e6;
-  --accent: #0f7a6c;
-  --accent-deep: #0a5c52;
-  --accent-soft: #d8f3ee;
-  --warn: #b45309;
-  --warn-soft: #fff1e0;
-  --danger: #b42318;
-  --danger-soft: #fdecea;
-  --ok: #047857;
-  --ok-soft: #dcfce7;
-  --hero-glow: rgba(15, 122, 108, 0.18);
-  --mesh-a: #d9ebe8;
-  --mesh-b: #e8eef3;
-  --mesh-c: #f7f3ea;
+  --bg: #070b12;
+  --bg-elevated: #0d1522;
+  --ink: #e8f4ff;
+  --ink-muted: #8fa3b8;
+  --line: rgba(56, 232, 255, 0.18);
+  --accent: #38e8ff;
+  --accent-deep: #12b8d4;
+  --accent-soft: rgba(56, 232, 255, 0.12);
+  --warn: #ffb347;
+  --warn-soft: rgba(255, 179, 71, 0.15);
+  --danger: #ff5c7a;
+  --danger-soft: rgba(255, 92, 122, 0.15);
+  --ok: #3dff9a;
+  --ok-soft: rgba(61, 255, 154, 0.12);
+  --hud-cyan: #38e8ff;
+  --hud-amber: #ffb347;
+  --hero-glow: rgba(56, 232, 255, 0.22);
+  --mesh-a: rgba(18, 184, 212, 0.2);
+  --mesh-b: rgba(255, 179, 71, 0.12);
+  --mesh-c: rgba(8, 20, 40, 0.9);
 }
 
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--ink);
-  --font-sans: var(--font-manrope);
-  --font-display: var(--font-syne);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
 * {
@@ -40,14 +42,14 @@ body {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-body), sans-serif;
 }
 
 h1,
 h2,
 h3,
 .font-display {
-  font-family: var(--font-syne), sans-serif;
+  font-family: var(--font-display), sans-serif;
 }
 
 a {
@@ -56,7 +58,7 @@ a {
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: rgba(56, 232, 255, 0.35);
 }
 
 @keyframes fade-up {
@@ -101,6 +103,45 @@ a {
   }
 }
 
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hud-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 232, 255, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 28px 0 rgba(56, 232, 255, 0.28);
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes boot-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
 .animate-fade-up {
   animation: fade-up 0.7s ease both;
 }
@@ -117,6 +158,14 @@ a {
   animation: float-soft 6s ease-in-out infinite;
 }
 
+.animate-spin-slow {
+  animation: spin-slow 18s linear infinite;
+}
+
+.animate-pulse-soft {
+  animation: hud-breathe 5s ease-in-out infinite;
+}
+
 .processing-bar {
   animation: pulse-bar 1.2s ease-in-out infinite;
   transform-origin: left center;
@@ -126,7 +175,7 @@ a {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0.25),
     transparent
   );
   background-size: 200% 100%;
@@ -144,40 +193,159 @@ a {
 .hero-atmosphere {
   background:
     radial-gradient(900px 500px at 70% 20%, var(--hero-glow), transparent 60%),
-    radial-gradient(700px 400px at 15% 80%, rgba(12, 26, 36, 0.06), transparent 55%),
-    linear-gradient(160deg, #eef5f4 0%, #f5f3ee 45%, #e8eef2 100%);
-}
-
-.app-shell {
-  background:
-    radial-gradient(800px 400px at 100% 0%, rgba(15, 122, 108, 0.08), transparent 50%),
-    var(--bg);
+    radial-gradient(700px 400px at 15% 80%, rgba(255, 179, 71, 0.12), transparent 55%),
+    linear-gradient(160deg, #05080f 0%, #0a1628 45%, #071018 100%);
 }
 
 .hero-mesh {
   background-image:
-    linear-gradient(rgba(15, 122, 108, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 122, 108, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(56, 232, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 232, 255, 0.06) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse at 60% 40%, black 20%, transparent 70%);
 }
 
-@keyframes pulse-soft {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.06);
-  }
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 5s ease-in-out infinite;
+.app-shell {
+  background:
+    radial-gradient(900px 500px at 0% 0%, rgba(56, 232, 255, 0.08), transparent 50%),
+    radial-gradient(700px 400px at 100% 100%, rgba(255, 179, 71, 0.06), transparent 45%),
+    var(--bg);
+  color: var(--ink);
 }
 
 .tour-panel {
   animation: fade-up 0.45s ease both;
+}
+
+.jarvis-stage {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(700px 400px at 80% 10%, rgba(56, 232, 255, 0.12), transparent 55%),
+    radial-gradient(500px 300px at 10% 90%, rgba(255, 179, 71, 0.1), transparent 50%),
+    linear-gradient(180deg, #05080f, #0a1322 40%, #070b12);
+}
+
+.scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(56, 232, 255, 0.03) 51%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.scanlines::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(56, 232, 255, 0.07),
+    transparent
+  );
+  animation: scan 7s linear infinite;
+  pointer-events: none;
+}
+
+.hud-panel {
+  border: 1px solid rgba(56, 232, 255, 0.2);
+  background: linear-gradient(
+    160deg,
+    rgba(12, 24, 40, 0.92),
+    rgba(8, 14, 24, 0.88)
+  );
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  backdrop-filter: blur(10px);
+  animation: hud-breathe 6s ease-in-out infinite;
+}
+
+.metric-pulse {
+  animation: fade-up 0.6s ease both;
+}
+
+.hud-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #38e8ff, #12b8d4);
+  color: #041018;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.hud-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.hud-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.hud-btn.ghost {
+  background: transparent;
+  color: var(--hud-cyan);
+  border: 1px solid rgba(56, 232, 255, 0.35);
+}
+
+.jarvis-boot {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at center, #0c1a2c, #05080f 70%);
+}
+
+.jarvis-boot-ring {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 9999px;
+  border: 1px solid rgba(56, 232, 255, 0.45);
+  animation: boot-ring 1.6s ease-out infinite;
+}
+
+.jarvis-boot-ring.delay {
+  animation-delay: 0.4s;
+  border-color: rgba(255, 179, 71, 0.4);
+}
+
+/* Soften legacy light components inside dark shell */
+.app-shell .rounded-md.border.border-\[var\(--line\)\].bg-white,
+.app-shell .bg-white,
+.app-shell .bg-white\/90,
+.app-shell .bg-white\/80 {
+  background: rgba(12, 22, 36, 0.9) !important;
+  color: var(--ink);
+}
+
+.app-shell input,
+.app-shell textarea,
+.app-shell select {
+  background: rgba(5, 10, 18, 0.8);
+  color: var(--ink);
+  border-color: rgba(56, 232, 255, 0.25);
 }
