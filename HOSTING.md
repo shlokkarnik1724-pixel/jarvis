@@ -1,61 +1,39 @@
 # Make Circle a real shared app for friends
 
-This turns the demo into a multi-user product: Google or email login, create/join a circle, shared events/vault/tabs/games.
+## Your current Vercel URL
 
-## 1) Create a free Supabase project
+https://jarvis-shlokkarnik1724-5935s-projects.vercel.app
 
-1. Go to https://supabase.com → New project
-2. **Authentication → Providers**
-   - Enable **Email** (turn OFF “Confirm email” for fastest friend invites, or leave ON)
-   - Optionally enable **Google** (add Google Cloud OAuth client IDs)
-3. **SQL → New query** — run in order:
-   - `supabase/schema.sql`
-   - `supabase/schema_bootstrap.sql`
-4. **Storage** — confirm private bucket `vault` exists (created by schema)
+If that redirects to a Vercel login page, Deployment Protection is still ON.
 
-## 2) Copy keys into hosting (Vercel)
+### Make it public (required for friends)
+1. Vercel → project **jarvis** → **Settings** → **Deployment Protection**
+2. Turn **Production** protection **Off**
+3. Open the URL again — you should see Circle login
 
-In Supabase: **Project Settings → API** and **Database**
+### Add Supabase env (required for real accounts)
+Vercel → **Settings** → **Environment Variables** (Production):
 
-| Env var | Where |
+| Name | Value |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `anon` `public` key |
-| `SUPABASE_SERVICE_ROLE_KEY` | `service_role` key (keep secret) |
-| `DATABASE_URL` | Database → URI (use connection pooling URI if offered) |
-| `NEXT_PUBLIC_SITE_URL` | `https://YOUR-APP.vercel.app` |
-| `NEXT_PUBLIC_APP_URL` | same as above |
+| `NEXT_PUBLIC_SUPABASE_URL` | from Supabase → Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key |
+| `DATABASE_URL` | Supabase Database URI |
+| `NEXT_PUBLIC_SITE_URL` | `https://jarvis-shlokkarnik1724-5935s-projects.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | same as SITE_URL |
 
-Also add the same redirect URL in Supabase Auth:
-`https://YOUR-APP.vercel.app/auth/callback`
+Then **Deployments → … → Redeploy**.
 
-## 3) Deploy
+In Supabase SQL editor run:
+1. `supabase/schema.sql`
+2. `supabase/schema_bootstrap.sql`
 
-1. Merge PR branch `cursor/circle-web-portal-scaffold-2391`
-2. Import repo on https://vercel.com/new
-3. Paste env vars → Deploy
+Auth → Email enabled (optional: disable Confirm email for faster friend invites).  
+Auth → URL config: Site URL + redirect `https://jarvis-shlokkarnik1724-5935s-projects.vercel.app/auth/callback`
 
-## 4) Use it with friends
-
-1. You open the Vercel URL → **Create account** (email) or Google
-2. **Create a circle** on onboarding
-3. Open **Settings** → copy **invite code**
-4. Friend signs up → **Join with invite code**
-5. Shared events, vault uploads, tabs, games, roast/toast all persist in Supabase
-
-## 5) Local run with real auth
-
-```bash
-cp .env.example .env.local
-# fill real Supabase keys
-npm install
-npm run dev
-```
-
-Demo mode only runs when Supabase URL still contains `YOUR_PROJECT`.
-
-## Auth options
-
-- **Email/password** — best for circulating with friends quickly
-- **Google OAuth** — enable in Supabase + Google Cloud console
-- **Preview demo** — local/demo only; not for real friend groups
+## Friend flow
+1. You open the Vercel URL → Create account
+2. Create a circle
+3. Settings → copy invite code
+4. Friends sign up → Join with invite code
