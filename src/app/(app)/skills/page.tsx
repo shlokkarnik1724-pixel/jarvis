@@ -60,6 +60,7 @@ function SkillsLibraryInner() {
           <option value="all">All statuses</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
+          <option value="superseded">Superseded</option>
           <option value="rejected">Rejected</option>
         </Select>
         <Select
@@ -111,7 +112,7 @@ function SkillsLibraryInner() {
                     tone={
                       s.status === "approved"
                         ? "ok"
-                        : s.status === "rejected"
+                        : s.status === "rejected" || s.status === "superseded"
                           ? "danger"
                           : "warn"
                     }

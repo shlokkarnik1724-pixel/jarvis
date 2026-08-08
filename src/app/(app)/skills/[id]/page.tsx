@@ -13,17 +13,32 @@ type Payload = {
     status: string;
     confidence: number;
     jsonSchema: SkillSchema;
+    validFrom?: string;
+    validTo?: string | null;
+    supersededBy?: string | null;
   };
   conversation: {
     rawText: string;
     sourceRef: string;
   } | null;
+  active?: boolean;
+  sopMarkdown?: string;
   exports?: {
     json: SkillSchema;
     yaml: string;
     systemPrompt: string;
+    sop?: string;
+    langchain?: string;
+    crewai?: string;
+    autogen?: string;
+    webhook?: string;
   };
-  conflicts?: { id: string; title: string; action: string }[];
+  conflicts?: {
+    id: string;
+    title: string;
+    action: string;
+    status?: string;
+  }[];
 };
 
 function highlightExcerpt(text: string, excerpt: string) {
@@ -31,7 +46,10 @@ function highlightExcerpt(text: string, excerpt: string) {
   const needle = excerpt.slice(0, Math.min(60, excerpt.length));
   const idx = text.toLowerCase().indexOf(needle.toLowerCase());
   if (idx < 0) return [{ t: text, h: false }];
-  const end = Math.min(text.length, idx + Math.max(excerpt.length, needle.length));
+  const end = Math.min(
+    text.length,
+    idx + Math.max(excerpt.length, needle.length)
+  );
   return [
     { t: text.slice(0, idx), h: false },
     { t: text.slice(idx, end), h: true },
@@ -56,6 +74,7 @@ export default function SkillReviewPage() {
   const [draft, setDraft] = useState<SkillSchema | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState<"skill" | "sop">("skill");
   const [copied, setCopied] = useState("");
 
   async function load() {
@@ -109,12 +128,6 @@ export default function SkillReviewPage() {
     router.refresh();
   }
 
-  async function copyText(label: string, content: string) {
-    await navigator.clipboard.writeText(content);
-    setCopied(label);
-    setTimeout(() => setCopied(""), 1500);
-  }
-
   if (!data || !draft) {
     return (
       <div className="text-sm text-[var(--ink-muted)]">
@@ -128,7 +141,7 @@ export default function SkillReviewPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-wide text-[var(--ink-muted)]">
-            Skill review · human-in-the-loop governance
+            Bi-directional verification · human-in-the-loop
           </p>
           <h1 className="font-display text-3xl tracking-tight mt-1">
             {draft.title}
@@ -138,39 +151,46 @@ export default function SkillReviewPage() {
               tone={
                 data.skill.status === "approved"
                   ? "ok"
-                  : data.skill.status === "rejected"
+                  : data.skill.status === "rejected" ||
+                      data.skill.status === "superseded"
                     ? "danger"
                     : "warn"
               }
             >
               {data.skill.status}
             </Badge>
+            {data.active && <Badge tone="accent">graph-active</Badge>}
             <Badge tone="accent">
               Confidence {Math.round(draft.confidence * 100)}%
             </Badge>
             <Badge>{data.conversation?.sourceRef}</Badge>
           </div>
+          <p className="mt-2 text-xs text-[var(--ink-muted)]">
+            Bi-temporal: valid from {data.skill.validFrom || "—"}
+            {data.skill.validTo ? ` → ${data.skill.validTo}` : " → present"}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href={`/simulator?skill=${data.skill.id}`}>
-            <Button variant="secondary">Run Test</Button>
+            <Button variant="secondary">Run sandbox</Button>
           </Link>
-          <Link href="/skills">
-            <Button variant="ghost">Back to library</Button>
+          <Link href="/graph">
+            <Button variant="outline">View in graph</Button>
           </Link>
         </div>
       </div>
 
       {!!data.conflicts?.length && (
         <div className="mt-6 rounded-md border border-[var(--warn)]/40 bg-[var(--warn-soft)] px-4 py-3 text-sm text-[var(--warn)]">
-          <p className="font-medium">Possible policy conflict detected</p>
+          <p className="font-medium">
+            Conflict / supersession candidates in the temporal graph
+          </p>
           {data.conflicts.map((c) => (
             <p key={c.id} className="mt-1">
-              Overlaps with{" "}
               <Link href={`/skills/${c.id}`} className="underline">
                 {c.title}
-              </Link>
-              : “{c.action}”
+              </Link>{" "}
+              ({c.status || "approved"}): “{c.action}”
             </p>
           ))}
         </div>
@@ -180,7 +200,7 @@ export default function SkillReviewPage() {
         <div className="rounded-md border border-[var(--line)] bg-white p-5">
           <h2 className="font-display text-lg">Source conversation</h2>
           <p className="mt-1 text-xs text-[var(--ink-muted)]">
-            Traceability: highlighted text generated this rule.
+            Audit generated rules against the original excerpt before approval.
           </p>
           <pre className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
             {parts.length
@@ -201,50 +221,113 @@ export default function SkillReviewPage() {
         </div>
 
         <div className="rounded-md border border-[var(--line)] bg-white p-5 space-y-4">
-          <h2 className="font-display text-lg">Structured skill</h2>
-          <div>
-            <Label>Title</Label>
-            <Input
-              value={draft.title}
-              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label>Condition (IF)</Label>
-            <Textarea
-              className="min-h-20"
-              value={draft.condition}
-              onChange={(e) =>
-                setDraft({ ...draft, condition: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <Label>Action (THEN)</Label>
-            <Textarea
-              className="min-h-20"
-              value={draft.action}
-              onChange={(e) => setDraft({ ...draft, action: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label>Category</Label>
-            <Select
-              value={draft.category}
-              onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  category: e.target.value as SkillSchema["category"],
-                })
-              }
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant={tab === "skill" ? "primary" : "outline"}
+              onClick={() => setTab("skill")}
             >
-              <option>Refunds</option>
-              <option>Escalation</option>
-              <option>Discounting</option>
-              <option>Incident Response</option>
-              <option>Other</option>
-            </Select>
+              Agent JSON skill
+            </Button>
+            <Button
+              size="sm"
+              variant={tab === "sop" ? "primary" : "outline"}
+              onClick={() => setTab("sop")}
+            >
+              Human SOP
+            </Button>
           </div>
+
+          {tab === "skill" ? (
+            <>
+              <div>
+                <Label>Title</Label>
+                <Input
+                  value={draft.title}
+                  onChange={(e) =>
+                    setDraft({ ...draft, title: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Condition (IF)</Label>
+                <Textarea
+                  className="min-h-20"
+                  value={draft.condition}
+                  onChange={(e) =>
+                    setDraft({ ...draft, condition: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Action (THEN)</Label>
+                <Textarea
+                  className="min-h-20"
+                  value={draft.action}
+                  onChange={(e) =>
+                    setDraft({ ...draft, action: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Category</Label>
+                <Select
+                  value={draft.category}
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      category: e.target.value as SkillSchema["category"],
+                    })
+                  }
+                >
+                  <option>Refunds</option>
+                  <option>Escalation</option>
+                  <option>Discounting</option>
+                  <option>Incident Response</option>
+                  <option>Other</option>
+                </Select>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-3">
+              {(draft.sop_steps || []).map((s) => (
+                <div
+                  key={s.step}
+                  className="border-l-2 border-[var(--accent)] pl-3"
+                >
+                  <p className="text-sm font-medium">
+                    {s.step}. {s.title}
+                  </p>
+                  <p className="text-xs text-[var(--ink-muted)] mt-1">
+                    {s.detail}
+                  </p>
+                  {s.owner && (
+                    <p className="text-[10px] text-[var(--accent-deep)] mt-1">
+                      Owner: {s.owner}
+                    </p>
+                  )}
+                </div>
+              ))}
+              {!draft.sop_steps?.length && (
+                <p className="text-sm text-[var(--ink-muted)]">
+                  SOP steps generate on extract/approve.
+                </p>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  download(
+                    `${data.skill.id}.sop.md`,
+                    data.exports?.sop || data.sopMarkdown || "",
+                    "text/markdown"
+                  )
+                }
+              >
+                Download SOP markdown
+              </Button>
+            </div>
+          )}
 
           {draft.flagged_fields?.length > 0 && (
             <div className="rounded-md bg-[var(--warn-soft)] px-3 py-3 text-sm text-[var(--warn)] space-y-1">
@@ -281,53 +364,53 @@ export default function SkillReviewPage() {
 
           <div className="border-t border-[var(--line)] pt-4">
             <p className="text-xs uppercase tracking-wide text-[var(--ink-muted)] mb-2">
-              Export for agents
+              Execution exports
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  download(
-                    `${data.skill.id}.json`,
-                    JSON.stringify(data.exports?.json || draft, null, 2)
-                  )
-                }
-              >
-                JSON
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  download(
-                    `${data.skill.id}.yaml`,
-                    data.exports?.yaml || "",
-                    "text/yaml"
-                  )
-                }
-              >
-                YAML
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  download(
-                    `${data.skill.id}-prompt.txt`,
-                    data.exports?.systemPrompt || "",
-                    "text/plain"
-                  )
-                }
-              >
-                System prompt
-              </Button>
+              {(
+                [
+                  ["JSON", data.exports?.json && JSON.stringify(data.exports.json, null, 2), "json"],
+                  ["YAML", data.exports?.yaml, "yaml"],
+                  ["SOP", data.exports?.sop, "md"],
+                  ["LangChain", data.exports?.langchain, "langchain.json"],
+                  ["CrewAI", data.exports?.crewai, "crewai.json"],
+                  ["AutoGen", data.exports?.autogen, "autogen.json"],
+                  ["Webhook", data.exports?.webhook, "webhook.json"],
+                ] as const
+              ).map(([label, content, ext]) =>
+                content ? (
+                  <Button
+                    key={label}
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      download(
+                        `${data.skill.id}.${ext}`,
+                        typeof content === "string"
+                          ? content
+                          : JSON.stringify(content, null, 2),
+                        ext.includes("yaml")
+                          ? "text/yaml"
+                          : ext.includes("md")
+                            ? "text/markdown"
+                            : "application/json"
+                      )
+                    }
+                  >
+                    {label}
+                  </Button>
+                ) : null
+              )}
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() =>
-                  copyText("prompt", data.exports?.systemPrompt || "")
-                }
+                onClick={async () => {
+                  await navigator.clipboard.writeText(
+                    data.exports?.systemPrompt || ""
+                  );
+                  setCopied("prompt");
+                  setTimeout(() => setCopied(""), 1200);
+                }}
               >
                 {copied === "prompt" ? "Copied" : "Copy prompt"}
               </Button>

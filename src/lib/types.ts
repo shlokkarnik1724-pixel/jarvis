@@ -1,6 +1,6 @@
 export type Role = "admin" | "member";
 
-export type SkillStatus = "pending" | "approved" | "rejected";
+export type SkillStatus = "pending" | "approved" | "rejected" | "superseded";
 
 export type ConnectorStatus =
   | "connected"
@@ -66,6 +66,13 @@ export interface Conversation {
   createdAt: string;
 }
 
+export interface SopStep {
+  step: number;
+  title: string;
+  detail: string;
+  owner?: string;
+}
+
 export interface SkillSchema {
   title: string;
   condition: string;
@@ -74,6 +81,7 @@ export interface SkillSchema {
   confidence: number;
   source_excerpt: string;
   flagged_fields: string[];
+  sop_steps?: SopStep[];
 }
 
 export interface Skill {
@@ -85,6 +93,11 @@ export interface Skill {
   status: SkillStatus;
   confidence: number;
   category: SkillCategory;
+  /** Bi-temporal: when this rule became valid */
+  validFrom: string;
+  /** Bi-temporal: when this rule stopped being valid (null = still active) */
+  validTo: string | null;
+  supersededBy: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -136,6 +149,19 @@ export interface BrainMessage {
   createdAt: string;
 }
 
+/** Zero-touch passive ingestion event */
+export interface IngestionEvent {
+  id: string;
+  organizationId: string;
+  source: string;
+  channel: string;
+  summary: string;
+  rawSnippet: string;
+  decisionDetected: boolean;
+  skillId?: string | null;
+  createdAt: string;
+}
+
 export interface Database {
   users: User[];
   organizations: Organization[];
@@ -149,6 +175,7 @@ export interface Database {
   activities: ActivityItem[];
   routingItems: RoutingItem[];
   brainMessages: BrainMessage[];
+  ingestionEvents: IngestionEvent[];
 }
 
 export interface SessionPayload {

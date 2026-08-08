@@ -2,6 +2,7 @@ import type {
   ActivityItem,
   Connector,
   Conversation,
+  IngestionEvent,
   Membership,
   Organization,
   RoutingItem,
@@ -11,6 +12,7 @@ import type {
 } from "./types";
 import { id, now } from "./db";
 import { CONNECTOR_CATALOG } from "./config";
+import { withSop } from "./sop";
 
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString();
@@ -223,26 +225,108 @@ export function buildDemoSeed(userId: string) {
 
   for (const def of skillDefs) {
     const skillId = id("skl");
+    const schema = withSop(def.schema);
     skills.push({
       id: skillId,
       organizationId: org.id,
       conversationId: def.conversationId,
       title: def.title,
-      jsonSchema: def.schema,
+      jsonSchema: schema,
       status: def.status,
       confidence: def.confidence,
       category: def.category,
+      validFrom: def.createdAt,
+      validTo: null,
+      supersededBy: null,
       createdAt: def.createdAt,
       updatedAt: def.updatedAt,
     });
     skillVersions.push({
       id: id("ver"),
       skillId,
-      jsonSchema: def.schema,
+      jsonSchema: schema,
       editedBy: userId,
       createdAt: def.createdAt,
     });
   }
+
+  // Bi-temporal example: older discount cap superseded by current 15% rule
+  const legacyId = id("skl");
+  const currentDiscount = skills.find((s) => s.category === "Discounting");
+  if (currentDiscount) {
+    skills.push({
+      id: legacyId,
+      organizationId: org.id,
+      conversationId: conversations[0].id,
+      title: "Legacy Enterprise Discount Cap (10%)",
+      jsonSchema: withSop({
+        title: "Legacy Enterprise Discount Cap (10%)",
+        condition: "Customer Tier = Enterprise",
+        action: "Permit up to 10% discount without manager sign-off",
+        category: "Discounting",
+        confidence: 0.9,
+        source_excerpt: "Old policy: Enterprise capped at 10%.",
+        flagged_fields: [],
+      }),
+      status: "superseded",
+      confidence: 0.9,
+      category: "Discounting",
+      validFrom: minutesAgo(60 * 24 * 40),
+      validTo: currentDiscount.validFrom,
+      supersededBy: currentDiscount.id,
+      createdAt: minutesAgo(60 * 24 * 40),
+      updatedAt: currentDiscount.validFrom,
+    });
+  }
+
+  const ingestionEvents: IngestionEvent[] = [
+    {
+      id: id("ing"),
+      organizationId: org.id,
+      source: "slack",
+      channel: "#sales-questions",
+      summary: "Passive listener extracted Enterprise discount decision",
+      rawSnippet:
+        "Jordan: Cap at 15% for Enterprise — no manager sign-off needed.",
+      decisionDetected: true,
+      skillId: currentDiscount?.id,
+      createdAt: minutesAgo(118),
+    },
+    {
+      id: id("ing"),
+      organizationId: org.id,
+      source: "zendesk",
+      channel: "Ticket #4821",
+      summary: "Zendesk thread mined for refund exception",
+      rawSnippet:
+        "Enterprise + P1 outage → full refund outside 30-day window.",
+      decisionDetected: true,
+      skillId: skills.find((s) => s.category === "Refunds")?.id,
+      createdAt: minutesAgo(82),
+    },
+    {
+      id: id("ing"),
+      organizationId: org.id,
+      source: "gong",
+      channel: "Call · Acme QBR",
+      summary: "Gong call restated discount ceiling (no new conflict)",
+      rawSnippet: "We still hold Enterprise at 15% without manager.",
+      decisionDetected: true,
+      skillId: currentDiscount?.id,
+      createdAt: minutesAgo(30),
+    },
+    {
+      id: id("ing"),
+      organizationId: org.id,
+      source: "gmail",
+      channel: "support-leads@",
+      summary: "Email monitored — no net-new decision",
+      rawSnippet: "FYI weekly VIP volume is up 12%.",
+      decisionDetected: false,
+      skillId: null,
+      createdAt: minutesAgo(14),
+    },
+  ];
 
   const routingItems: RoutingItem[] = [
     {
@@ -330,6 +414,7 @@ export function buildDemoSeed(userId: string) {
     skillVersions,
     activities,
     routingItems,
+    ingestionEvents,
     threads: THREADS,
   };
 }

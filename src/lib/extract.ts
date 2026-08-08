@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { z } from "zod";
 import type { SkillCategory, SkillSchema } from "./types";
+import { withSop } from "./sop";
 
 export const skillSchemaZod = z.object({
   title: z.string(),
@@ -16,9 +17,19 @@ export const skillSchemaZod = z.object({
   confidence: z.number().min(0).max(1),
   source_excerpt: z.string(),
   flagged_fields: z.array(z.string()),
+  sop_steps: z
+    .array(
+      z.object({
+        step: z.number(),
+        title: z.string(),
+        detail: z.string(),
+        owner: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
-const SYSTEM_PROMPT = `You extract executable decision rules ("skills") from workplace conversations.
+const SYSTEM_PROMPT = `You extract executable decision rules ("skills") AND human SOP steps from workplace conversations.
 Return ONLY valid JSON matching this schema:
 {
   "title": string,
@@ -27,9 +38,10 @@ Return ONLY valid JSON matching this schema:
   "category": "Refunds" | "Escalation" | "Discounting" | "Incident Response" | "Other",
   "confidence": number 0-1,
   "source_excerpt": exact quote from the conversation that justifies the rule,
-  "flagged_fields": array of missing/ambiguous details that a human should confirm
+  "flagged_fields": array of missing/ambiguous details,
+  "sop_steps": [{ "step": number, "title": string, "detail": string, "owner": string }]
 }
-Focus on operational decision logic, not general advice. Prefer one clear rule.`;
+Focus on operational decision logic. Prefer one clear rule with 4-5 SOP steps.`;
 
 function inferCategory(
   text: string,
@@ -127,7 +139,7 @@ export function demoExtractSkill(
   const confidence =
     flagged.length === 0 ? 0.91 : flagged.length === 1 ? 0.84 : 0.72;
 
-  return {
+  return withSop({
     title,
     condition,
     action,
@@ -135,7 +147,7 @@ export function demoExtractSkill(
     confidence,
     source_excerpt: excerpt,
     flagged_fields: flagged,
-  };
+  });
 }
 
 export async function extractSkillFromConversation(
@@ -164,7 +176,7 @@ export async function extractSkillFromConversation(
     });
 
     const raw = completion.choices[0]?.message?.content || "{}";
-    const parsed = skillSchemaZod.parse(JSON.parse(raw));
+    const parsed = withSop(skillSchemaZod.parse(JSON.parse(raw)));
     return { skill: parsed, provider: "openai" };
   } catch {
     return { skill: demoExtractSkill(text, category), provider: "demo" };

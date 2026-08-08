@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
 import { requireOrgSession } from "@/lib/auth";
 import { readDb } from "@/lib/db";
+import { sopMarkdown } from "@/lib/sop";
+import { exportForFramework, AGENT_SYSTEM_MANIFEST } from "@/lib/manifest";
+import { isSkillActive } from "@/lib/graph";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await requireOrgSession();
     const { id } = await params;
-    const db = await readDb();
+    const { searchParams } = new URL(req.url);
+    const framework = (searchParams.get("framework") || "json") as
+      | "langchain"
+      | "crewai"
+      | "autogen"
+      | "webhook"
+      | "json"
+      | "yaml";
 
+    const db = await readDb();
     const skill = db.skills.find(
       (s) => s.id === id && s.organizationId === session.organizationId
     );
@@ -22,44 +33,12 @@ export async function GET(
       (c) => c.id === skill.conversationId
     );
 
-    const systemPrompt = [
-      "You are an enterprise AI agent. Apply this approved company skill exactly.",
-      "",
-      `Skill ID: ${skill.id}`,
-      `Skill: ${skill.jsonSchema.title}`,
-      `Status: ${skill.status}`,
-      `IF ${skill.jsonSchema.condition}`,
-      `THEN ${skill.jsonSchema.action}`,
-      `Category: ${skill.jsonSchema.category}`,
-      `Source: ${conversation?.sourceRef || "conversation"}`,
-      `Source excerpt: "${skill.jsonSchema.source_excerpt}"`,
-      "",
-      "Cite this skill and its source when answering. Do not invent conflicting policies.",
-    ].join("\n");
-
-    const yaml = [
-      `id: ${skill.id}`,
-      `title: ${JSON.stringify(skill.jsonSchema.title)}`,
-      `status: ${skill.status}`,
-      `condition: ${JSON.stringify(skill.jsonSchema.condition)}`,
-      `action: ${JSON.stringify(skill.jsonSchema.action)}`,
-      `category: ${skill.jsonSchema.category}`,
-      `confidence: ${skill.jsonSchema.confidence}`,
-      `source_ref: ${JSON.stringify(conversation?.sourceRef || "")}`,
-      `source_excerpt: ${JSON.stringify(skill.jsonSchema.source_excerpt)}`,
-      `flagged_fields:`,
-      ...(skill.jsonSchema.flagged_fields.length
-        ? skill.jsonSchema.flagged_fields.map((f) => `  - ${JSON.stringify(f)}`)
-        : ["  []"]),
-    ].join("\n");
-
-    // Simple conflict scan: same category approved skills with different actions
     const conflicts = db.skills
       .filter(
         (s) =>
           s.organizationId === session.organizationId &&
           s.id !== skill.id &&
-          s.status === "approved" &&
+          (s.status === "approved" || s.status === "superseded") &&
           s.category === skill.category
       )
       .filter((s) => {
@@ -74,17 +53,38 @@ export async function GET(
         id: s.id,
         title: s.title,
         action: s.jsonSchema.action,
+        status: s.status,
+        validTo: s.validTo,
       }));
+
+    const pack = exportForFramework(skill, framework);
 
     return NextResponse.json({
       skill,
       conversation,
+      active: isSkillActive(skill),
+      sopMarkdown: sopMarkdown(skill.jsonSchema),
       exports: {
         json: skill.jsonSchema,
-        yaml,
-        systemPrompt,
+        yaml: exportForFramework(skill, "yaml").content,
+        systemPrompt: [
+          "You are an enterprise AI agent bound to an approved Tactix skill.",
+          `Skill ID: ${skill.id}`,
+          `IF ${skill.jsonSchema.condition}`,
+          `THEN ${skill.jsonSchema.action}`,
+          `Valid from ${skill.validFrom} to ${skill.validTo || "present"}`,
+          `Source: ${conversation?.sourceRef || "conversation"}`,
+          `Excerpt: "${skill.jsonSchema.source_excerpt}"`,
+        ].join("\n"),
+        sop: sopMarkdown(skill.jsonSchema),
+        langchain: exportForFramework(skill, "langchain").content,
+        crewai: exportForFramework(skill, "crewai").content,
+        autogen: exportForFramework(skill, "autogen").content,
+        webhook: exportForFramework(skill, "webhook").content,
+        pack,
       },
       conflicts,
+      manifest: AGENT_SYSTEM_MANIFEST,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed";

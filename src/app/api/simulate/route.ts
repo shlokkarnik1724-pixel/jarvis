@@ -4,6 +4,7 @@ import { requireOrgSession } from "@/lib/auth";
 import { id, now, readDb, updateDb } from "@/lib/db";
 import { simulateAgentResponse } from "@/lib/extract";
 import { formatDate } from "@/lib/utils";
+import { isSkillActive } from "@/lib/graph";
 
 const schema = z.object({
   query: z.string().min(3),
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
 
     const approved = db.skills.filter(
       (s) =>
-        s.organizationId === session.organizationId && s.status === "approved"
+        s.organizationId === session.organizationId && isSkillActive(s)
     );
 
     if (approved.length === 0) {

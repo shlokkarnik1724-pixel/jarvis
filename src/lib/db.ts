@@ -19,6 +19,7 @@ const emptyDb = (): Database => ({
   activities: [],
   routingItems: [],
   brainMessages: [],
+  ingestionEvents: [],
 });
 
 function migrate(db: Database): Database {
@@ -26,13 +27,19 @@ function migrate(db: Database): Database {
   if (!db.dataSources) db.dataSources = [];
   if (!db.routingItems) db.routingItems = [];
   if (!db.brainMessages) db.brainMessages = [];
-  // Mirror legacy dataSources into connectors if needed
+  if (!db.ingestionEvents) db.ingestionEvents = [];
   if (db.connectors.length === 0 && db.dataSources.length > 0) {
     db.connectors = db.dataSources.map((d) => ({
       ...d,
       provider: d.provider || "manual",
       name: d.name,
     }));
+  }
+  // Backfill bi-temporal fields on older skills
+  for (const s of db.skills || []) {
+    if (!s.validFrom) s.validFrom = s.createdAt;
+    if (s.validTo === undefined) s.validTo = null;
+    if (s.supersededBy === undefined) s.supersededBy = null;
   }
   return db;
 }

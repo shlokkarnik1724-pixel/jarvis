@@ -1,55 +1,38 @@
-# Tactix AI — Company Brain MVP
+# Tactix AI / OmniAgent OS — Company Brain MVP
 
-The living operating system for enterprise teams: connect **Slack, Microsoft Teams, Google, Zoho, Sheets, Zoom** (and more), then let AI arrange decisions, answer questions, and route work to the right person.
+Hybrid platform that turns messy conversations into **self-updating, verifiable execution rules** with full provenance.
 
-## What this MVP is
+## Blueprint layers (implemented)
 
-| Layer | What you get |
+| Layer | In product |
 |---|---|
-| **Auth** | Supabase Auth — email/password + **Continue with Google** |
-| **Data** | Supabase Postgres + RLS by `organization_id` (`supabase/schema.sql`) |
-| **Brain** | Ask the company brain across approved skills + sources |
-| **Connectors** | Slack, Teams, Google Chat, Gmail, Outlook, Zoho, Zendesk, Sheets, Zoom, Fireflies, paste/upload |
-| **Inbox** | AI routing — deliver info to the right owner |
-| **Skills** | Extract → review → approve → export JSON/YAML/system prompt |
-| **Agents** | Simulator that cites approved skills |
+| **Ingestion** | `/ingestion` — zero-touch listeners (Slack, Zendesk, Gmail, Gong) + passive tick simulator |
+| **Extraction** | `/extract` + skill review — JSON/YAML skills **and** human SOP steps |
+| **Memory** | `/graph` — bi-temporal knowledge graph (`valid_from` / `valid_to` / supersession) |
+| **Execution** | `/simulator` sandbox + exports to LangChain, CrewAI, AutoGen, webhook |
+| **Governance** | Split-screen source verification + approve/reject + audit trail |
 
-## 1) Connect Supabase (required for real login / Google)
+Master manifest: `GET /api/manifest` → OmniAgent_OS JSON.
 
-1. Create a project at [supabase.com](https://supabase.com/dashboard)
-2. Copy URL + anon key into `.env.local` (see `.env.example`)
-3. Run `supabase/schema.sql` in the SQL Editor
-4. Auth → Providers → **Google** → enable (add Google Cloud OAuth client)
-5. Auth → URL Config → allow `http://localhost:3000/auth/callback`
-6. For fast demos: disable **Confirm email** under Email provider
+## Run
 
 ```bash
-cp .env.example .env.local
-# fill NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000/setup for the checklist, then http://localhost:3000/login → **Continue with Google**.
+1. Open http://localhost:3000 → **Launch company brain demo**
+2. Tour: Brain → Passive Ingestion → Knowledge Graph → Skill review (SOP + JSON) → Sandbox → export LangChain/CrewAI/AutoGen
 
-## 2) Preview without Supabase (local demo)
+## Real auth (Supabase + Google)
 
-```bash
-npm install && npm run dev
-```
+See `/setup` and `.env.example`. Run `supabase/schema.sql` then `supabase/schema_omniagent_upgrade.sql`.
 
-Click **Launch company brain demo** — seeded Acme workspace with connectors, skills, routing inbox, and Ask Brain. Local JWT auth is used only when Supabase keys are missing.
+## Investor demo script
 
-## Investor walkthrough
-
-1. Landing → Launch company brain demo  
-2. **Company Brain** — ask “What’s our Enterprise discount policy?”  
-3. **Connectors** — show Slack / Teams / Zoho / Sheets / Zoom connected  
-4. **Routing Inbox** — route a VIP issue to the right owner  
-5. **Extract / Skills** — paste a thread → approve → export  
-6. **Agent Test** — question cites the approved skill  
-7. For real auth: Connect Supabase + Google on `/setup`
-
-## Repo / PR
-
-Branch: `cursor/tactix-ai-mvp-fcc1`
+1. **Passive Ingestion** — show listeners + “Simulate passive tick”
+2. **Extract / Review** — split-screen source vs skill; switch to **Human SOP** tab
+3. **Approve** — conflicting nodes auto-invalidate (bi-temporal)
+4. **Knowledge Graph** — active vs superseded nodes with validity windows
+5. **Sandbox Runtime** — ask a question; only active skills apply
+6. **Export** — LangChain / CrewAI / AutoGen / Webhook packs

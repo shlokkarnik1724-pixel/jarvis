@@ -114,6 +114,7 @@ export async function POST(req: Request) {
         db.skillVersions.push(...seed.skillVersions);
         db.activities.push(...seed.activities);
         db.routingItems.push(...seed.routingItems);
+        db.ingestionEvents.push(...(seed.ingestionEvents || []));
         return seed.org;
       }
 

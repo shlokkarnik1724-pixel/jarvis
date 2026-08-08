@@ -16,18 +16,22 @@ import {
   X,
   Brain,
   Inbox,
+  Radio,
+  Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui";
 
 const nav = [
   { href: "/brain", label: "Company Brain", icon: Brain },
-  { href: "/inbox", label: "Routing Inbox", icon: Inbox },
+  { href: "/ingestion", label: "Passive Ingestion", icon: Radio },
   { href: "/connectors", label: "Connectors", icon: Cable },
+  { href: "/inbox", label: "Routing Inbox", icon: Inbox },
+  { href: "/graph", label: "Knowledge Graph", icon: Network },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/skills", label: "Skill Library", icon: Library },
   { href: "/extract", label: "Extract Skill", icon: Sparkles },
-  { href: "/simulator", label: "Agent Test", icon: FlaskConical },
+  { href: "/simulator", label: "Sandbox Runtime", icon: FlaskConical },
   { href: "/settings", label: "Team & Settings", icon: Settings },
   { href: "/billing", label: "Billing", icon: CreditCard },
 ];

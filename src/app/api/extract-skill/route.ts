@@ -70,10 +70,26 @@ export async function POST(req: Request) {
         status: "pending" as const,
         confidence: extracted.confidence,
         category: extracted.category,
+        validFrom: now(),
+        validTo: null,
+        supersededBy: null,
         createdAt: now(),
         updatedAt: now(),
       };
       db.skills.push(skill);
+
+      db.ingestionEvents = db.ingestionEvents || [];
+      db.ingestionEvents.push({
+        id: id("ing"),
+        organizationId: session.organizationId,
+        source: "manual",
+        channel: conversation.sourceRef,
+        summary: `Decision candidate extracted: ${skill.title}`,
+        rawSnippet: body.text.slice(0, 280),
+        decisionDetected: true,
+        skillId: skill.id,
+        createdAt: now(),
+      });
 
       db.skillVersions.push({
         id: id("ver"),

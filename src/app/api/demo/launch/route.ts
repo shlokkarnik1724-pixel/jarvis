@@ -52,6 +52,9 @@ export async function POST() {
       db.brainMessages = (db.brainMessages || []).filter(
         (r) => !oldOrgIds.has(r.organizationId)
       );
+      db.ingestionEvents = (db.ingestionEvents || []).filter(
+        (r) => !oldOrgIds.has(r.organizationId)
+      );
 
       const seed = buildDemoSeed(user.id);
       db.organizations.push(seed.org);
@@ -63,6 +66,7 @@ export async function POST() {
       db.skillVersions.push(...seed.skillVersions);
       db.activities.push(...seed.activities);
       db.routingItems.push(...seed.routingItems);
+      db.ingestionEvents.push(...(seed.ingestionEvents || []));
 
       return { user, org: seed.org };
     });
