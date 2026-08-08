@@ -1,21 +1,22 @@
-import { Manrope, Syne } from "next/font/google";
+import { Fraunces, Outfit } from "next/font/google";
 import type { Metadata } from "next";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const outfit = Outfit({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
-const syne = Syne({
-  variable: "--font-syne",
+const fraunces = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Tactix AI — Living Operating System for Enterprise AI Agents",
+  title: "Circle — Private Social Hub",
   description:
-    "Turn Slack threads, emails, and support tickets into structured, approved skills your AI agents can execute.",
+    "A localized, privacy-first social portal for closed friend groups: events, vault, games, and tabs.",
 };
 
 export default function RootLayout({
@@ -24,9 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${manrope.variable} ${syne.variable} h-full`}>
+    <html lang="en" className={`${outfit.variable} ${fraunces.variable} h-full`}>
       <body className="min-h-full flex flex-col font-sans antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

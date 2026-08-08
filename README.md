@@ -1,38 +1,63 @@
-# Tactix AI / OmniAgent OS — Company Brain MVP
+# Circle Web Portal
 
-Hybrid platform that turns messy conversations into **self-updating, verifiable execution rules** with full provenance.
+Privacy-first social hub for closed friend groups ("circles").
 
-## Blueprint layers (implemented)
+## Stack
 
-| Layer | In product |
-|---|---|
-| **Ingestion** | `/ingestion` — zero-touch listeners (Slack, Zendesk, Gmail, Gong) + passive tick simulator |
-| **Extraction** | `/extract` + skill review — JSON/YAML skills **and** human SOP steps |
-| **Memory** | `/graph` — bi-temporal knowledge graph (`valid_from` / `valid_to` / supersession) |
-| **Execution** | `/simulator` sandbox + exports to LangChain, CrewAI, AutoGen, webhook |
-| **Governance** | Split-screen source verification + approve/reject + audit trail |
+- Next.js 16 (App Router + `proxy.ts`)
+- TypeScript (strict)
+- Tailwind CSS + Shadcn-style UI primitives
+- Supabase Auth / Postgres / Realtime / private Storage
+- Prisma ORM 7 (`@prisma/adapter-pg`)
+- Zustand + TanStack Query
+- Web Crypto (AES-GCM) + HTML5 Canvas vault viewer
 
-Master manifest: `GET /api/manifest` → OmniAgent_OS JSON.
+## Features
 
-## Run
+- Google OAuth (Supabase) with demo-mode fallback
+- Dashboard, events, shopping claims, check-ins
+- Secure Photo Vault (`/api/vault/stream/[id]` + canvas viewer)
+- Leaderboard, vibe generator, roast & toast, tab settlements
+- Realtime-ready game state machine (Mafia, Trivia, Prediction League, Myth Buster)
+
+## Quick start (demo)
 
 ```bash
 npm install
 npm run dev
 ```
 
-1. Open http://localhost:3000 → **Launch company brain demo**
-2. Tour: Brain → Passive Ingestion → Knowledge Graph → Skill review (SOP + JSON) → Sandbox → export LangChain/CrewAI/AutoGen
+Open http://127.0.0.1:3000 and click **Continue with Google** — without Supabase keys the app enters demo mode automatically.
 
-## Real auth (Supabase + Google)
+## Production setup
 
-See `/setup` and `.env.example`. Run `supabase/schema.sql` then `supabase/schema_omniagent_upgrade.sql`.
+1. Copy `.env.example` → `.env.local`
+2. Create a Supabase project, enable Google provider
+3. Run `supabase/schema.sql` in the SQL editor
+4. Create a private Storage bucket named `vault`
+5. Set `DATABASE_URL` to the Supabase Postgres connection string
+6. Run `npx prisma generate`
 
-## Investor demo script
+```bash
+npm run build
+npm start
+```
 
-1. **Passive Ingestion** — show listeners + “Simulate passive tick”
-2. **Extract / Review** — split-screen source vs skill; switch to **Human SOP** tab
-3. **Approve** — conflicting nodes auto-invalidate (bi-temporal)
-4. **Knowledge Graph** — active vs superseded nodes with validity windows
-5. **Sandbox Runtime** — ask a question; only active skills apply
-6. **Export** — LangChain / CrewAI / AutoGen / Webhook packs
+## Security notes
+
+- Vault assets never use public storage URLs or `<img>` tags
+- Canvas overlay blocks context menu / drag
+- `canvas.toDataURL` / `toBlob` are overridden in the vault viewer
+- Dynamic watermark stamps viewer identity onto pixels
+- RLS policies scope all circle data by membership
+
+## Scripts
+
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Local development server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run test:unit` | Settlement + game state unit checks |
+| `npm run prisma:generate` | Generate Prisma client |

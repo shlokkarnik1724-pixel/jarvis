@@ -1,0 +1,39 @@
+# CIRCLE WEB PORTAL - CURSOR SYSTEM RULES & CONFIGURATION
+# File: .cursorrules
+
+project_context:
+  project_name: "Circle Web Portal"
+  tech_stack:
+    - "Next.js 16 (App Router, Proxy)"
+    - "TypeScript Strict"
+    - "Tailwind CSS"
+    - "Shadcn UI"
+    - "Supabase (Auth/DB/Realtime)"
+    - "Prisma ORM"
+    - "Zustand"
+  architecture: "Feature-driven component architecture with isolated client/server execution context."
+
+core_directives:
+  - "Never generate placeholder code, 'TODO' comments, or incomplete mock implementations. All code must be fully written, typed, and production-ready."
+  - "Enforce strict TypeScript typing. The 'any' type is strictly forbidden. Define explicit interfaces or types for all API inputs, database outputs, and component props."
+  - "Keep server logic in Server Components or API routes. Do not expose secret keys or direct DB connections to client runtime."
+  - "Always implement Row-Level Security (RLS) patterns for database access queries."
+  - "Apply client-side performance optimizations: dynamic imports where appropriate. Follow React Compiler guidance; avoid unnecessary useMemo/useCallback."
+
+security_and_privacy_rules:
+  - "Photo Vault assets MUST NEVER be rendered using standard <img> tags. Always utilize the HTML5 Canvas viewer component (@components/vault/canvas-viewer.tsx)."
+  - "Canvas rendering MUST strip object URLs immediately after memory load and handle right-click/drag prevention via DOM overlay wrappers."
+  - "Do not generate code that exposes direct public S3/Supabase storage URLs for vault images. All vault media must stream through /api/vault/stream/[id]."
+  - "Encrypt sensitive user payload fields before persistence using the Web Crypto API module."
+
+coding_style:
+  - "Use functional React components with standard named exports."
+  - "Prefer async/await syntax over promise chains."
+  - "Use Tailwind CSS for all styling; strictly avoid inline style objects."
+  - "Error handling: All API routes must wrap logic in try/catch blocks and return standardized JSON responses: { success: boolean, data?: T, error?: string }."
+  - "Next.js 16 uses proxy.ts (not middleware.ts) for request interception."
+
+agent_workflow_instructions:
+  - "When modifying multiple files, first output a brief file-by-file execution plan."
+  - "Run type checks (tsc --noEmit) and linter commands after generating significant logic changes."
+  - "If a generation step fails or introduces a bug, enter Debug Mode: diagnose the failure hypothesis, write a failing test, and iterate until resolved."

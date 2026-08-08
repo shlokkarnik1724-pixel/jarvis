@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  // Keep Turbopack rooted on this project (avoids Windows parent-folder lockfile issues)
+  // Keep Turbopack rooted on this project
   turbopack: {
     root: path.resolve(process.cwd()),
   },

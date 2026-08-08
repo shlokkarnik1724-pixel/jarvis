@@ -37,9 +37,17 @@ yarn-error.log*
 # local JSON database
 /data/tactix.json
 
+# editor / agent skill mirrors
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
