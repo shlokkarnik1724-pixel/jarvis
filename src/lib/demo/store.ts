@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "crypto";
 import type {
   CircleMemberView,
   CircleSummary,
@@ -238,30 +238,52 @@ function createStore(): DemoStore {
   };
 }
 
+export const DEMO_COOKIE = "circle_demo_session";
+
 const globalDemo = globalThis as unknown as { __circleDemo?: DemoStore };
+
+function demoSecret(): string {
+  return (
+    process.env.AUTH_SECRET ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    "circle-demo-secret"
+  );
+}
+
+export function demoLogin(): { token: string; user: CircleUser } {
+  const exp = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  const payload = `demo.${exp}.${randomUUID()}`;
+  const sig = createHmac("sha256", demoSecret()).update(payload).digest("base64url");
+  return { token: `${payload}.${sig}`, user: getDemoUser() };
+}
+
+export function demoLogout(_token: string | undefined): void {
+  // Stateless signed cookies — clearing the cookie is enough.
+}
+
+export function isDemoSession(token: string | undefined): boolean {
+  if (!token) return false;
+  const idx = token.lastIndexOf(".");
+  if (idx <= 0) return false;
+  const payload = token.slice(0, idx);
+  const sig = token.slice(idx + 1);
+  const expected = createHmac("sha256", demoSecret()).update(payload).digest("base64url");
+  try {
+    const a = Buffer.from(sig);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
+  } catch {
+    return false;
+  }
+  const exp = Number(payload.split(".")[1]);
+  return Number.isFinite(exp) && Date.now() <= exp;
+}
 
 export function getDemoStore(): DemoStore {
   if (!globalDemo.__circleDemo) {
     globalDemo.__circleDemo = createStore();
   }
   return globalDemo.__circleDemo;
-}
-
-export function demoLogin(): { token: string; user: CircleUser } {
-  const store = getDemoStore();
-  const token = `demo_${randomUUID()}`;
-  store.sessions.add(token);
-  return { token, user: store.user };
-}
-
-export function demoLogout(token: string | undefined): void {
-  if (!token) return;
-  getDemoStore().sessions.delete(token);
-}
-
-export function isDemoSession(token: string | undefined): boolean {
-  if (!token) return false;
-  return getDemoStore().sessions.has(token);
 }
 
 export function getDemoUser(): CircleUser {
@@ -430,5 +452,3 @@ export function updateDemoNickname(
   if (row) row.nickname = nickname;
   return member;
 }
-
-export const DEMO_COOKIE = "circle_demo_session";

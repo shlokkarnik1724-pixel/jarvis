@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-import { DEMO_COOKIE } from "@/lib/demo/store";
+import { DEMO_COOKIE, isDemoSession } from "@/lib/demo/store";
 
 const protectedPrefixes = [
   "/dashboard",
@@ -46,14 +46,20 @@ export async function proxy(request: NextRequest) {
   }
 
   const demoToken = request.cookies.get(DEMO_COOKIE)?.value;
-  if (needsAuth(pathname) && !demoToken) {
+  const demoOk = isDemoSession(demoToken);
+
+  if (needsAuth(pathname) && !demoOk) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    const res = NextResponse.redirect(url);
+    if (demoToken && !demoOk) {
+      res.cookies.delete(DEMO_COOKIE);
+    }
+    return res;
   }
 
-  if (demoToken && (pathname === "/login" || pathname === "/")) {
+  if (demoOk && (pathname === "/login" || pathname === "/")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

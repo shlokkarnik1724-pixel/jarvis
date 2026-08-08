@@ -16,12 +16,23 @@ export async function POST(request: Request) {
 
     const mode = body.mode ?? (isSupabaseConfigured() ? "google" : "demo");
 
+    // Explicit email/google without Supabase should not silently become demo
+    if (!isSupabaseConfigured() && (mode === "email" || mode === "google")) {
+      return NextResponse.json(
+        fail(
+          "Supabase is not configured yet. Use Preview demo, or add Supabase env vars on Vercel and redeploy."
+        ),
+        { status: 400 }
+      );
+    }
+
     if (mode === "demo" || !isSupabaseConfigured()) {
       const { token, user } = demoLogin();
       const cookieStore = await cookies();
       cookieStore.set(DEMO_COOKIE, token, {
         httpOnly: true,
         sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
       });
