@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   CalendarDays,
   Gamepad2,
+  GlassWater,
   LayoutDashboard,
   MessageSquareQuote,
   Settings,
@@ -28,6 +29,7 @@ const NAV = [
   { href: "/vault", label: "Photo Vault", icon: Vault },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/fun/vibe", label: "Vibe Gen", icon: Sparkles },
+  { href: "/fun/drinks", label: "Drinks Bar", icon: GlassWater },
   { href: "/fun/roast-toast", label: "Roast & Toast", icon: MessageSquareQuote },
   { href: "/fun/tabs", label: "Tab Tracker", icon: Wallet },
   { href: "/games", label: "Games", icon: Gamepad2 },
