@@ -27,6 +27,11 @@ import {
   bumpSmoke,
   type DrinkTierKey,
 } from "@/lib/party/systems";
+import {
+  addPlaylistTrack,
+  bumpPlaylistPlay,
+  listPlaylist,
+} from "@/lib/party/playlist";
 import { getSessionContext, requireCircleId } from "@/lib/session";
 import { fail, ok } from "@/lib/utils";
 
@@ -88,6 +93,8 @@ export async function GET(request: Request) {
         );
       case "smokes":
         return NextResponse.json(ok({ rows: listSmokes(circleId) }));
+      case "playlist":
+        return NextResponse.json(ok(listPlaylist(circleId)));
       default:
         return NextResponse.json(fail("Unknown party feature"), { status: 400 });
     }
@@ -270,6 +277,29 @@ export async function POST(request: Request) {
           }),
         })
       );
+    }
+
+    if (feature === "playlist" && action === "add") {
+      const result = addPlaylistTrack({
+        circleId,
+        title: String(body.title ?? ""),
+        artist: String(body.artist ?? ""),
+        vibes: String(body.vibes ?? ""),
+        addedBy: name,
+        addedById: session.user.id,
+      });
+      if ("error" in result) {
+        return NextResponse.json(fail(result.error), { status: 400 });
+      }
+      return NextResponse.json(ok(result));
+    }
+
+    if (feature === "playlist" && action === "play") {
+      const result = bumpPlaylistPlay(circleId, String(body.trackId ?? ""));
+      if ("error" in result) {
+        return NextResponse.json(fail(result.error), { status: 404 });
+      }
+      return NextResponse.json(ok(result));
     }
 
     return NextResponse.json(fail("Unknown party action"), { status: 400 });

@@ -316,11 +316,12 @@ a {
 /* —— Party ocean / circular islands —— */
 .party-ocean {
   background:
-    radial-gradient(circle at 18% 22%, rgba(31, 111, 84, 0.42), transparent 42%),
-    radial-gradient(circle at 82% 18%, rgba(240, 194, 122, 0.22), transparent 40%),
-    radial-gradient(circle at 70% 78%, rgba(126, 184, 201, 0.22), transparent 45%),
-    linear-gradient(165deg, #060a08 0%, #0d1a14 40%, #13241c 100%);
-  animation: partyPulse 7s ease-in-out infinite;
+    radial-gradient(circle at 12% 18%, rgba(255, 120, 80, 0.28), transparent 38%),
+    radial-gradient(circle at 88% 12%, rgba(120, 190, 255, 0.26), transparent 36%),
+    radial-gradient(circle at 70% 78%, rgba(255, 200, 90, 0.22), transparent 42%),
+    radial-gradient(circle at 30% 70%, rgba(80, 220, 160, 0.18), transparent 40%),
+    linear-gradient(155deg, #070b16 0%, #121a2a 32%, #1a1430 68%, #0c1820 100%);
+  animation: partyPulse 8s ease-in-out infinite;
 }
 
 /* Sweeping disco / party lights over the green stage */
@@ -394,14 +395,23 @@ a {
 }
 
 .feature-readable {
-  color: var(--ink);
+  color: #14201b !important;
 }
 
 .feature-readable h1,
 .feature-readable h2,
 .feature-readable h3,
+.feature-readable p,
+.feature-readable span,
+.feature-readable li,
+.feature-readable label,
 .feature-readable .font-island {
-  color: var(--ink);
+  color: inherit;
+}
+
+.feature-readable .text-\[var\(--ink-muted\)\],
+.feature-readable [class*="ink-muted"] {
+  color: #4a5a52 !important;
 }
 
 .feature-room-lights {
@@ -537,6 +547,14 @@ a {
 .room-chip-events {
   background: linear-gradient(145deg, rgba(14, 28, 36, 0.92), rgba(80, 140, 160, 0.75));
 }
+.room-chip-playlist {
+  background: linear-gradient(145deg, rgba(28, 14, 40, 0.92), rgba(180, 90, 140, 0.7));
+}
+.room-playlist {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(232, 168, 124, 0.4), transparent 45%),
+    radial-gradient(circle at 70% 70%, rgba(120, 90, 180, 0.3), transparent 50%);
+}
 
 .party-orbs::before,
 .party-orbs::after {
@@ -610,19 +628,50 @@ a {
 }
 
 .theme-vault .party-ocean {
-  background: linear-gradient(160deg, #0d1518 0%, #1a2a30 50%, #243840 100%);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(126, 184, 201, 0.35), transparent 40%),
+    linear-gradient(160deg, #071018 0%, #142832 50%, #1c3640 100%);
 }
 .theme-bar .party-ocean {
-  background: linear-gradient(160deg, #1a1208 0%, #2a1c0e 45%, #3d2814 100%);
+  background:
+    radial-gradient(circle at 30% 15%, rgba(255, 180, 80, 0.35), transparent 42%),
+    linear-gradient(160deg, #1a0e06 0%, #2a180c 45%, #3d2410 100%);
 }
 .theme-money .party-ocean {
-  background: linear-gradient(160deg, #07140f 0%, #0f2a1c 50%, #145240 100%);
+  background:
+    radial-gradient(circle at 25% 25%, rgba(80, 200, 140, 0.3), transparent 40%),
+    linear-gradient(160deg, #04140f 0%, #0c2a1c 50%, #145238 100%);
 }
 .theme-games .party-ocean {
-  background: linear-gradient(160deg, #120e0a 0%, #2a1a12 50%, #3d2418 100%);
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255, 140, 90, 0.28), transparent 40%),
+    linear-gradient(160deg, #140c08 0%, #2a1810 50%, #3d2418 100%);
 }
 .theme-flags .party-ocean {
-  background: linear-gradient(160deg, #180c0c 0%, #2a1414 50%, #3d1c1c 100%);
+  background:
+    radial-gradient(circle at 40% 20%, rgba(255, 90, 80, 0.3), transparent 40%),
+    linear-gradient(160deg, #180808 0%, #2a1212 50%, #3d1c1c 100%);
+}
+.theme-chat .party-ocean {
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255, 170, 110, 0.28), transparent 40%),
+    linear-gradient(160deg, #120c08 0%, #241810 55%, #1a2218 100%);
+}
+.theme-smokes .party-ocean {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(180, 120, 90, 0.28), transparent 40%),
+    linear-gradient(160deg, #100c0a 0%, #221814 55%, #2a1c16 100%);
+}
+.theme-playlist .party-ocean {
+  background:
+    radial-gradient(circle at 60% 20%, rgba(255, 120, 180, 0.22), transparent 40%),
+    radial-gradient(circle at 20% 70%, rgba(120, 180, 255, 0.22), transparent 40%),
+    linear-gradient(160deg, #0c0a16 0%, #1a1230 55%, #121820 100%);
+}
+.theme-events .party-ocean {
+  background:
+    radial-gradient(circle at 40% 20%, rgba(120, 200, 220, 0.28), transparent 40%),
+    linear-gradient(160deg, #071018 0%, #122028 55%, #0e1c18 100%);
 }
 
 /* Feature pages on party shell need light readable panels */
@@ -641,9 +690,10 @@ a {
 .theme-chat,
 .theme-smokes,
 .theme-events,
+.theme-playlist,
 .theme-default,
 .theme-home {
-  color: #f4f7f5;
+  color: #f7faf8;
 }
 
 .theme-home {

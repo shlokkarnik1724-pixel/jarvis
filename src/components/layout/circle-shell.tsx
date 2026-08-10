@@ -1,17 +1,19 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PartyIntro } from "@/components/party/party-intro";
 import { FeatureEnvironment } from "@/components/party/feature-environment";
 import { AmbientGifField } from "@/components/party/ambient-gif-field";
 import { StealthGate } from "@/components/party/stealth-gate";
+import { NotificationCenter } from "@/components/party/notification-center";
 import { BackToCircleBubble } from "@/components/party/back-to-circle";
 import { PageTransition } from "@/components/motion/page-transition";
 import { StatusPulse } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { PARTY_ISLANDS, themeForPath } from "@/lib/islands/party-catalog";
-import { playSound } from "@/lib/sound/sfx";
+import { armSounds, playSound } from "@/lib/sound/sfx";
 import { cn } from "@/lib/utils";
 
 interface CircleShellProps {
@@ -39,6 +41,15 @@ export function CircleShell({
   const isHome = pathname === "/dashboard";
   const theme = themeForPath(pathname);
 
+  useEffect(() => {
+    function arm() {
+      armSounds();
+      window.removeEventListener("pointerdown", arm);
+    }
+    window.addEventListener("pointerdown", arm, { once: true });
+    return () => window.removeEventListener("pointerdown", arm);
+  }, []);
+
   return (
     <StealthGate>
       <div
@@ -56,15 +67,16 @@ export function CircleShell({
 
         {!isHome ? <BackToCircleBubble /> : null}
 
-        <header className="app-header sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-white/20 bg-black/55 px-3 py-2.5 backdrop-blur-xl sm:px-4 lg:px-8">
+        <header className="app-header sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-white/20 bg-black/60 px-3 py-2.5 backdrop-blur-xl sm:px-4 lg:px-8">
           <div className={cn("min-w-0", !isHome && "pl-14 sm:pl-36")}>
             <LinkHome isHome={isHome} />
-            <p className="truncate text-[11px] font-medium text-white/85 drop-shadow sm:text-xs">
+            <p className="truncate text-[11px] font-medium text-white drop-shadow sm:text-xs">
               {circleName} · {userName}
               {demo ? " · demo" : ""}
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <NotificationCenter />
             {demo ? <StatusPulse tone="accent" /> : null}
             <form action="/api/auth/logout" method="post">
               <Button

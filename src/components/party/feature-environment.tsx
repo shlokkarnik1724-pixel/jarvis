@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { islandForPath } from "@/lib/islands/party-catalog";
 import { cn } from "@/lib/utils";
 
-/** Quirky per-feature “room” wrapper — readable panel on themed stage. */
+/** Quirky per-feature “room” wrapper — high-contrast readable panel on themed stage. */
 export function FeatureEnvironment({
   children,
   className,
@@ -22,17 +22,17 @@ export function FeatureEnvironment({
       </div>
 
       {island ? (
-        <div className="mb-5 rounded-2xl border border-white/30 bg-black/55 px-4 py-3 text-white shadow-lg backdrop-blur-md">
+        <div className="mb-5 rounded-2xl border border-white/40 bg-black/70 px-4 py-3 text-white shadow-lg backdrop-blur-md">
           <p className="font-island text-xl font-extrabold tracking-tight text-white drop-shadow">
             <span className="mr-2 text-2xl">{island.emoji}</span>
             {island.title}
           </p>
-          <p className="mt-1 text-sm font-medium text-white/90">{island.vibe}</p>
-          <p className="mt-0.5 text-xs text-white/70">{island.blurb}</p>
+          <p className="mt-1 text-sm font-medium text-amber-100">{island.vibe}</p>
+          <p className="mt-0.5 text-xs text-white/80">{island.blurb}</p>
         </div>
       ) : null}
 
-      <div className="feature-readable relative z-10 rounded-[1.75rem] border border-white/50 bg-[#f7faf8] p-3 text-[var(--ink)] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] sm:p-4 md:p-6">
+      <div className="feature-readable relative z-10 rounded-[1.75rem] border border-[#d5ddd6] bg-[#fbfcf9] p-3 text-[#14201b] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] sm:p-4 md:p-6">
         {children}
       </div>
     </div>

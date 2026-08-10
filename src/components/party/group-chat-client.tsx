@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/utils";
 import { playSound } from "@/lib/sound/sfx";
+import { pushCircleNotice } from "@/components/party/notification-center";
 import { toast } from "@/lib/store/toast-store";
 import type { ChatMessageView, MemberPartyProfile } from "@/lib/types";
 
@@ -67,6 +68,10 @@ export function GroupChatClient({ currentUserId }: { currentUserId: string }) {
       if (json.success && json.data) {
         setMessages((prev) => [...prev, json.data!]);
         setDraft("");
+        pushCircleNotice({
+          title: "Message sent",
+          body: body.slice(0, 80),
+        });
         return;
       }
       toast(json.error ?? "Couldn’t send", { tone: "error" });

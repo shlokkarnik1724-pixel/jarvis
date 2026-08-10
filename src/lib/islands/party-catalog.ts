@@ -150,6 +150,16 @@ export const PARTY_ISLANDS = [
     tilt: -2,
   },
   {
+    href: "/fun/playlist",
+    emoji: "🎧",
+    title: "Playlist",
+    blurb: "Circle aux tracker.",
+    theme: "playlist",
+    accent: "#e8a87c",
+    vibe: "Bluetooth speaker throne room",
+    tilt: 3,
+  },
+  {
     href: "/fun",
     emoji: "🌀",
     title: "Circle Lab",

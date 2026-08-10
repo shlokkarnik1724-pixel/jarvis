@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { PartyWidget } from "@/components/party/party-widget";
+import { AmbientGifField } from "@/components/party/ambient-gif-field";
 import { Badge } from "@/components/ui/badge";
 import { PARTY_ISLANDS, circleLayout } from "@/lib/islands/party-catalog";
 import { playSound } from "@/lib/sound/sfx";
@@ -34,11 +35,13 @@ export function PartyIslandsHome({
 
   return (
     <div className="relative min-h-[70dvh]">
+      <AmbientGifField density="home" className="fixed inset-0 z-0 opacity-90" />
+
       <div className="relative z-20 mb-3 space-y-2.5 px-1 pt-1">
-        <p className="font-island text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.85)] sm:text-4xl md:text-5xl">
+        <p className="font-island text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.95)] sm:text-4xl md:text-5xl">
           🌀 Circle
         </p>
-        <p className="max-w-xl text-sm font-medium text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] sm:text-base md:text-lg">
+        <p className="max-w-xl rounded-2xl bg-black/45 px-3 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md sm:text-base md:text-lg">
           Hey {userName} — {circleName} already started. Tap a room on the circle.
         </p>
         <div className="flex flex-wrap gap-2">
@@ -90,7 +93,7 @@ export function PartyIslandsHome({
                 >
                   <Link
                     href={island.href}
-                    onClick={() => playSound("tap")}
+                    onClick={() => playSound(index % 3 === 0 ? "spidey" : "tap")}
                     className="group block focus-visible:outline-none"
                   >
                     <motion.div

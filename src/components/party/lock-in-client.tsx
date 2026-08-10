@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { partyGet, partyPost } from "@/lib/party/client";
 import { playSound } from "@/lib/sound/sfx";
 import { toast } from "@/lib/store/toast-store";
+import { CabRecommendModal } from "@/components/party/cab-recommend-modal";
+import { pushCircleNotice } from "@/components/party/notification-center";
 
 type Attendance = {
   id: string;
@@ -102,6 +104,8 @@ export function LockInClient() {
   const [rideHome, setRideHome] = useState<RideRow[]>([]);
   const [shareLocation, setShareLocation] = useState(true);
   const [atHome, setAtHome] = useState(false);
+  const [myGeo, setMyGeo] = useState<{ lat: number; lng: number } | null>(null);
+  const [cabOpen, setCabOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function applyPayload(data: LockPayload) {
@@ -183,14 +187,30 @@ export function LockInClient() {
         // refresh ride home + locations
         const full = await partyGet<LockPayload>("lock");
         applyPayload(full);
+        if (geo) setMyGeo(geo);
         playSound(action === "in" ? "lockIn" : "tap");
         toast(action === "in" ? "Locked in" : "Locked out", {
           description:
             action === "in" && geo
-              ? "Location shared with the circle for 24h"
+              ? `Shared ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)} for 24h`
               : undefined,
           tone: "success",
         });
+        if (action === "in") {
+          pushCircleNotice({
+            title: "You locked in",
+            body: geo
+              ? `Location live on the safety web`
+              : atHome
+                ? "Home mode — location skipped"
+                : "Locked in without GPS",
+          });
+          const drunk = full.rideHome.filter((r) => !r.worthy && r.level >= 3);
+          if (drunk.length > 0 && !atHome) {
+            playSound("danger");
+            setCabOpen(true);
+          }
+        }
       } catch (error) {
         playSound("wrong");
         toast("Need a selfie", {
@@ -256,26 +276,67 @@ export function LockInClient() {
         </Button>
       </div>
 
-      <section className="rounded-[1.5rem] border border-white/40 bg-white/70 p-4">
-        <h2 className="font-island text-lg font-bold">🕸️ Location web</h2>
+      <section className="rounded-[1.5rem] border border-[var(--line)] bg-white p-4 text-[var(--ink)] shadow-sm">
+        <h2 className="font-island text-lg font-bold text-[var(--ink)]">🕸️ Location web</h2>
         <p className="mt-1 text-sm text-[var(--ink-muted)]">
-          Live pins from friends who shared GPS · Pune hang safety net
+          Live GPS pins · Pune safety net · tap a name for Maps
         </p>
+        {myGeo ? (
+          <p className="mt-2 rounded-xl bg-[var(--accent-soft)] px-3 py-2 text-sm font-medium text-[var(--ink)]">
+            Your pin: {myGeo.lat.toFixed(5)}, {myGeo.lng.toFixed(5)}{" "}
+            <a
+              className="underline"
+              href={`https://www.google.com/maps?q=${myGeo.lat},${myGeo.lng}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              open maps
+            </a>
+          </p>
+        ) : null}
         <div className="mt-3">
           <LocationWeb locations={locations} />
         </div>
+        <ul className="mt-3 space-y-1 text-sm text-[var(--ink)]">
+          {locations.map((loc) => (
+            <li key={loc.userId} className="flex justify-between gap-2">
+              <span className="font-medium">{loc.name}</span>
+              <a
+                className="text-[var(--accent-deep)] underline"
+                href={`https://www.google.com/maps?q=${loc.lat},${loc.lng}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {loc.lat.toFixed(3)}, {loc.lng.toFixed(3)}
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className="rounded-[1.5rem] border border-white/40 bg-white/70 p-4">
-        <h2 className="font-island text-lg font-bold">🚕 Ride home safely</h2>
-        <p className="mt-1 text-sm text-[var(--ink-muted)]">
-          Based on bar tiers — if they drank, they&apos;re not worthy to drive.
-        </p>
+      <section className="rounded-[1.5rem] border border-[var(--line)] bg-white p-4 text-[var(--ink)] shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="font-island text-lg font-bold text-[var(--ink)]">🚕 Ride home safely</h2>
+            <p className="mt-1 text-sm text-[var(--ink-muted)]">
+              Drunk = not worthy driver. We&apos;ll push Uber / Ola.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              playSound("danger");
+              setCabOpen(true);
+            }}
+          >
+            Cab tips
+          </Button>
+        </div>
         <ul className="mt-3 space-y-2 text-sm">
           {rideHome.map((row) => (
             <li
               key={row.userId}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--line)] px-3 py-2"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--line)] bg-[#f7faf8] px-3 py-2 text-[var(--ink)]"
             >
               <span>
                 {row.name} · {row.label}
@@ -292,7 +353,7 @@ export function LockInClient() {
         {rows.map((row) => (
           <figure
             key={row.id}
-            className="w-28 shrink-0 rounded-2xl border border-white/40 bg-white/70 p-2"
+            className="w-28 shrink-0 rounded-2xl border border-[var(--line)] bg-white p-2 text-[var(--ink)] shadow-sm"
           >
             {row.photoDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -302,12 +363,22 @@ export function LockInClient() {
                 className="h-24 w-full rounded-xl object-cover"
               />
             ) : null}
-            <figcaption className="mt-1 text-xs">
+            <figcaption className="mt-1 text-xs font-medium text-[var(--ink)]">
               {row.action === "in" ? "🟢" : "⚫"} {row.name}
             </figcaption>
           </figure>
         ))}
       </div>
+
+      <CabRecommendModal
+        open={cabOpen}
+        onClose={() => setCabOpen(false)}
+        targets={rideHome
+          .filter((r) => !r.worthy)
+          .map((r) => ({ name: r.name, drinkLabel: r.label, level: r.level }))}
+        lat={myGeo?.lat ?? locations[0]?.lat}
+        lng={myGeo?.lng ?? locations[0]?.lng}
+      />
     </div>
   );
 }
