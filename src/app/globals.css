@@ -476,6 +476,21 @@ a {
     radial-gradient(circle at 35% 25%, rgba(61, 143, 122, 0.45), transparent 45%),
     radial-gradient(circle at 70% 75%, rgba(126, 184, 201, 0.3), transparent 50%);
 }
+.room-chat {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(232, 168, 124, 0.45), transparent 45%),
+    radial-gradient(circle at 70% 75%, rgba(20, 18, 14, 0.45), transparent 50%);
+}
+.room-smokes {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(196, 92, 74, 0.4), transparent 45%),
+    radial-gradient(circle at 70% 70%, rgba(80, 60, 40, 0.35), transparent 50%);
+}
+.room-events {
+  background:
+    radial-gradient(circle at 40% 20%, rgba(126, 184, 201, 0.4), transparent 45%),
+    radial-gradient(circle at 60% 80%, rgba(31, 111, 84, 0.25), transparent 50%);
+}
 
 .room-chip-vault {
   background: linear-gradient(145deg, rgba(20, 40, 48, 0.92), rgba(70, 120, 140, 0.75));
@@ -512,6 +527,15 @@ a {
 }
 .room-chip-lab {
   background: linear-gradient(145deg, rgba(10, 36, 28, 0.92), rgba(50, 140, 110, 0.75));
+}
+.room-chip-chat {
+  background: linear-gradient(145deg, rgba(36, 22, 14, 0.92), rgba(180, 110, 70, 0.75));
+}
+.room-chip-smokes {
+  background: linear-gradient(145deg, rgba(40, 16, 12, 0.92), rgba(160, 70, 50, 0.75));
+}
+.room-chip-events {
+  background: linear-gradient(145deg, rgba(14, 28, 36, 0.92), rgba(80, 140, 160, 0.75));
 }
 
 .party-orbs::before,
@@ -614,6 +638,9 @@ a {
 .theme-regret,
 .theme-lock,
 .theme-lab,
+.theme-chat,
+.theme-smokes,
+.theme-events,
 .theme-default,
 .theme-home {
   color: #f4f7f5;

@@ -53,6 +53,7 @@ type PartyState = {
   }>;
   ddUserId: string | null;
   blackjackWins: Record<string, number>;
+  smokes: Record<string, { cigarettes: number; greens: number }>;
 };
 
 function partyBucket(circleId: string): PartyState {
@@ -68,8 +69,10 @@ function partyBucket(circleId: string): PartyState {
       attendance: [],
       ddUserId: null,
       blackjackWins: {},
+      smokes: {},
     };
   }
+  if (!state.party.smokes) state.party.smokes = {};
   return state.party;
 }
 
@@ -79,6 +82,95 @@ export function getBrokeTitle(balance: number): string {
   if (balance === 0) return "😐 Even Steven";
   if (balance > -300) return "🥲 Lowkey Broke";
   return "💀 Certified Broke Menace";
+}
+
+export function cigTitle(count: number): string {
+  if (count <= 0) return "🌬️ Clean lungs (for now)";
+  if (count <= 2) return "😌 Social puff";
+  if (count <= 5) return "🚬 Suttebaaz-in-training";
+  if (count <= 10) return "🔥 Certified Suttebaaz";
+  if (count <= 18) return "💨 Chain-smoking menace";
+  return "☠️ Full Suttebaaz Mode";
+}
+
+export function greenTitle(count: number): string {
+  if (count <= 0) return "🧊 Straight-edge tonight";
+  if (count <= 1) return "🌿 Occasional explorer";
+  if (count <= 3) return "☁️ Cloud merchant";
+  return "🛸 High Council member";
+}
+
+export function listSmokes(circleId: string) {
+  const party = partyBucket(circleId);
+  const members = getDemoMembers();
+  const seedDefaults: Record<string, { cigarettes: number; greens: number }> = {};
+  // Seed quirky demo counts once so the board isn't empty.
+  for (const m of members) {
+    if (!party.smokes[m.userId]) {
+      seedDefaults[m.userId] = { cigarettes: 0, greens: 0 };
+    }
+  }
+  if (Object.keys(party.smokes).length === 0 && members.length > 0) {
+    const presets = [4, 11, 2, 7, 1, 0, 3];
+    const greenPresets = [0, 2, 0, 1, 0, 0, 1];
+    members.forEach((m, i) => {
+      party.smokes[m.userId] = {
+        cigarettes: presets[i % presets.length] ?? 0,
+        greens: greenPresets[i % greenPresets.length] ?? 0,
+      };
+    });
+  }
+
+  return members
+    .map((m) => {
+      const row = party.smokes[m.userId] ?? seedDefaults[m.userId] ?? {
+        cigarettes: 0,
+        greens: 0,
+      };
+      return {
+        userId: m.userId,
+        name: m.name,
+        nickname: m.nickname,
+        cigarettes: row.cigarettes,
+        greens: row.greens,
+        cigTitle: cigTitle(row.cigarettes),
+        greenTitle: greenTitle(row.greens),
+      };
+    })
+    .sort((a, b) => b.cigarettes - a.cigarettes || b.greens - a.greens);
+}
+
+export function bumpSmoke(input: {
+  circleId: string;
+  userId: string;
+  kind: "cigarettes" | "greens";
+  delta?: number;
+}) {
+  const party = partyBucket(input.circleId);
+  const current = party.smokes[input.userId] ?? { cigarettes: 0, greens: 0 };
+  const delta = input.delta ?? 1;
+  if (input.kind === "cigarettes") {
+    current.cigarettes = Math.max(0, current.cigarettes + delta);
+  } else {
+    current.greens = Math.max(0, current.greens + delta);
+  }
+  party.smokes[input.userId] = current;
+  return listSmokes(input.circleId);
+}
+
+export function getSmokeForUser(circleId: string, userId: string) {
+  const row = listSmokes(circleId).find((r) => r.userId === userId);
+  return (
+    row ?? {
+      userId,
+      name: "Friend",
+      nickname: null,
+      cigarettes: 0,
+      greens: 0,
+      cigTitle: cigTitle(0),
+      greenTitle: greenTitle(0),
+    }
+  );
 }
 
 export function regretLabel(score: number): string {

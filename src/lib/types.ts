@@ -36,6 +36,14 @@ export interface CircleSummary {
   inviteCode: string;
 }
 
+export type EventRsvpStatus = "yes" | "no" | "maybe";
+
+export interface EventRsvpView {
+  userId: string;
+  name: string;
+  status: EventRsvpStatus;
+}
+
 export interface EventView {
   id: string;
   circleId: string;
@@ -47,6 +55,10 @@ export interface EventView {
   shoppingCount: number;
   claimedCount: number;
   checkedInByMe: boolean;
+  hostId: string | null;
+  hostName: string | null;
+  rsvps: EventRsvpView[];
+  myRsvp: EventRsvpStatus | null;
 }
 
 export interface ShoppingItemView {
@@ -245,4 +257,40 @@ export interface TruthDareCard {
   kind: "truth" | "dare";
   text: string;
   custom: boolean;
+}
+
+export interface SmokeRowView {
+  userId: string;
+  name: string;
+  nickname: string | null;
+  cigarettes: number;
+  greens: number;
+  cigTitle: string;
+  greenTitle: string;
+}
+
+export interface ChatMessageView {
+  id: string;
+  circleId: string;
+  userId: string;
+  name: string;
+  nickname: string | null;
+  body: string;
+  createdAt: string;
+}
+
+export interface MemberPartyProfile {
+  userId: string;
+  name: string;
+  nickname: string | null;
+  drinkLabel: string;
+  drinkLevel: number;
+  cigarettes: number;
+  cigTitle: string;
+  greens: number;
+  greenTitle: string;
+  tabNet: number;
+  brokeTitle: string;
+  nextEventRsvp: EventRsvpStatus | null;
+  nextEventTitle: string | null;
 }

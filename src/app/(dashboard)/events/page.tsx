@@ -23,7 +23,7 @@ export default async function EventsPage() {
         <div>
           <h1 className="font-display text-3xl">Events</h1>
           <p className="mt-2 text-[var(--ink-muted)]">
-            Check in, claim shopping items, and keep the circle in sync.
+            RSVP, pick a host, assign who brings what, and keep the circle honest.
           </p>
         </div>
       </Reveal>
@@ -33,7 +33,10 @@ export default async function EventsPage() {
       </Reveal>
 
       <Stagger className="divide-y divide-[var(--line)]">
-        {events.map((event) => (
+        {events.map((event) => {
+          const yes = event.rsvps.filter((r) => r.status === "yes").length;
+          const maybe = event.rsvps.filter((r) => r.status === "maybe").length;
+          return (
           <StaggerItem key={event.id}>
             <div className="py-5">
               <Link
@@ -47,15 +50,19 @@ export default async function EventsPage() {
                       {formatDate(event.date)}
                       {event.location ? ` · ${event.location}` : ""}
                     </p>
+                    <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                      Host: {event.hostName ?? "TBD"} · {yes} in · {maybe} maybe
+                    </p>
                   </div>
                   <Badge>
-                    {event.claimedCount}/{event.shoppingCount} claimed
+                    {event.claimedCount}/{event.shoppingCount} bringing
                   </Badge>
                 </div>
               </Link>
             </div>
           </StaggerItem>
-        ))}
+          );
+        })}
       </Stagger>
     </div>
   );

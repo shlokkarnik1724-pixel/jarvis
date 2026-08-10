@@ -157,7 +157,7 @@ export function ensureExtraState(circleId: string) {
       circleId,
       url: gif.url,
       title: gif.title,
-      pinnedByName: "Jordan Lee",
+      pinnedByName: "Meet Shinde",
       createdAt: new Date().toISOString(),
     }));
   }

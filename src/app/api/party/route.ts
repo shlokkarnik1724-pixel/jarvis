@@ -14,12 +14,14 @@ import {
   listDrinkTiers,
   listFlags,
   listRegrets,
+  listSmokes,
   listVibePoll,
   recordBlackjackWin,
   setDesignatedDriver,
   setDrinkTier,
   setRegret,
   voteVibePoll,
+  bumpSmoke,
   type DrinkTierKey,
 } from "@/lib/party/systems";
 import { getSessionContext, requireCircleId } from "@/lib/session";
@@ -71,6 +73,8 @@ export async function GET(request: Request) {
         return NextResponse.json(
           ok({ wins: getBlackjackWins(circleId, session.user.id) })
         );
+      case "smokes":
+        return NextResponse.json(ok({ rows: listSmokes(circleId) }));
       default:
         return NextResponse.json(fail("Unknown party feature"), { status: 400 });
     }
@@ -218,6 +222,19 @@ export async function POST(request: Request) {
           : getBlackjackWins(circleId, session.user.id);
       return NextResponse.json(
         ok({ dealer, playerValue, dealerValue, outcome, wins })
+      );
+    }
+
+    if (feature === "smokes" && action === "bump") {
+      return NextResponse.json(
+        ok({
+          rows: bumpSmoke({
+            circleId,
+            userId: String(body.userId ?? session.user.id),
+            kind: body.kind === "greens" ? "greens" : "cigarettes",
+            delta: Number(body.delta ?? 1),
+          }),
+        })
       );
     }
 
