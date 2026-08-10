@@ -28,6 +28,21 @@ import {
   vibePresets,
   getLabState,
 } from "@/lib/lab/store";
+import {
+  addTruthDare,
+  bumpSnack,
+  checkInStreak,
+  computeSuperlatives,
+  drawTruthDare,
+  getStreak,
+  listGifs,
+  listSnacks,
+  listTruthDare,
+  pinGif,
+  searchGifs,
+  spinRoulette,
+  ROULETTE_DARES,
+} from "@/lib/lab/islands-extra";
 import { getSessionContext, requireCircleId } from "@/lib/session";
 import { fail, ok } from "@/lib/utils";
 import type { WellnessStatus } from "@/lib/types";
@@ -100,6 +115,23 @@ export async function GET(request: Request) {
             members: state.members,
           })
         );
+      case "snacks":
+        return NextResponse.json(ok(listSnacks(circleId)));
+      case "gifs":
+        return NextResponse.json(
+          ok({
+            pins: listGifs(circleId),
+            results: await searchGifs(searchParams.get("q") ?? ""),
+          })
+        );
+      case "streaks":
+        return NextResponse.json(ok(getStreak(circleId)));
+      case "roulette":
+        return NextResponse.json(ok({ dares: ROULETTE_DARES }));
+      case "truthdare":
+        return NextResponse.json(ok(listTruthDare(circleId)));
+      case "superlatives":
+        return NextResponse.json(ok(computeSuperlatives(circleId)));
       default:
         return NextResponse.json(fail("Unknown lab feature"), { status: 400 });
     }
@@ -285,6 +317,54 @@ export async function POST(request: Request) {
     if (feature === "recovery" && action === "mom") {
       setMomFriend(circleId, session.user.id);
       return NextResponse.json(ok({ momFriendUserId: session.user.id }));
+    }
+
+    if (feature === "snacks" && action === "bump") {
+      const snackName = String(body.snackName ?? "").trim();
+      if (!snackName) {
+        return NextResponse.json(fail("Snack name required"), { status: 400 });
+      }
+      return NextResponse.json(ok(bumpSnack(circleId, snackName)));
+    }
+
+    if (feature === "gifs" && action === "pin") {
+      const url = String(body.url ?? "");
+      const title = String(body.title ?? "gif");
+      if (!url) return NextResponse.json(fail("GIF url required"), { status: 400 });
+      return NextResponse.json(
+        ok(
+          pinGif({
+            circleId,
+            url,
+            title,
+            pinnedByName: session.membership?.nickname || session.user.name,
+          })
+        )
+      );
+    }
+
+    if (feature === "gifs" && action === "search") {
+      const q = String(body.q ?? "");
+      return NextResponse.json(ok(await searchGifs(q)));
+    }
+
+    if (feature === "streaks" && action === "checkin") {
+      return NextResponse.json(ok(checkInStreak(circleId, session.user.id)));
+    }
+
+    if (feature === "roulette" && action === "spin") {
+      return NextResponse.json(ok(spinRoulette()));
+    }
+
+    if (feature === "truthdare" && action === "draw") {
+      return NextResponse.json(ok(drawTruthDare(circleId)));
+    }
+
+    if (feature === "truthdare" && action === "add") {
+      const kind = body.kind === "truth" ? "truth" : "dare";
+      const text = String(body.text ?? "").trim();
+      if (!text) return NextResponse.json(fail("Write a prompt"), { status: 400 });
+      return NextResponse.json(ok(addTruthDare({ circleId, kind, text })));
     }
 
     return NextResponse.json(fail("Unknown lab action"), { status: 400 });

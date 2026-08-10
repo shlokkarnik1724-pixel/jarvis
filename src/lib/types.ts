@@ -209,3 +209,40 @@ export interface RecoveryPlanView {
   kit: Array<{ name: string; qty: number; bought: boolean }>;
   createdAt: string;
 }
+
+export interface SnackCountView {
+  snackName: string;
+  count: number;
+  updatedAt: string;
+}
+
+export interface GifPinView {
+  id: string;
+  circleId: string;
+  url: string;
+  title: string;
+  pinnedByName: string;
+  createdAt: string;
+}
+
+export interface CircleStreakView {
+  current: number;
+  best: number;
+  lastCheckInDay: string | null;
+  checkedInToday: boolean;
+}
+
+export interface SuperlativeView {
+  emoji: string;
+  title: string;
+  userId: string;
+  name: string;
+  reason: string;
+}
+
+export interface TruthDareCard {
+  id: string;
+  kind: "truth" | "dare";
+  text: string;
+  custom: boolean;
+}

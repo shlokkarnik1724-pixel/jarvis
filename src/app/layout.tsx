@@ -1,4 +1,4 @@
-import { Fraunces, Outfit } from "next/font/google";
+import { Fraunces, Fredoka, Outfit } from "next/font/google";
 import type { Metadata } from "next";
 import { Providers } from "@/components/providers";
 import "./globals.css";
@@ -13,10 +13,16 @@ const fraunces = Fraunces({
   subsets: ["latin"],
 });
 
+const fredoka = Fredoka({
+  variable: "--font-island",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Circle — Private Social Hub",
+  title: "Circle — Floating Islands for Your Squad",
   description:
-    "A localized, privacy-first social portal for closed friend groups: events, vault, games, and tabs.",
+    "A privacy-first social portal for closed friend groups: vault, splitzy, sip roulette, and more.",
 };
 
 export default function RootLayout({
@@ -25,7 +31,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${fraunces.variable} h-full`}>
+    <html
+      lang="en"
+      className={`${outfit.variable} ${fraunces.variable} ${fredoka.variable} h-full`}
+    >
       <body className="min-h-full flex flex-col font-sans antialiased">
         <Providers>{children}</Providers>
       </body>

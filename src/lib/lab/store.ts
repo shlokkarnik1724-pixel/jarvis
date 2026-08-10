@@ -165,6 +165,10 @@ function labMembers(circleId: string): CircleMemberView[] {
   return members.length > 0 ? members : getDemoMembers();
 }
 
+export function getLabMembers(circleId: string): CircleMemberView[] {
+  return labMembers(circleId);
+}
+
 function labEvents(circleId: string): EventView[] {
   const events = getLabState(circleId).events;
   return events.length > 0 ? events : getDemoEvents();

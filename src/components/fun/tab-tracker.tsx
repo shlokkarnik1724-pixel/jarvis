@@ -5,15 +5,95 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { IslandCard, ConfettiBurst } from "@/components/islands/island-card";
 import { toast } from "@/lib/store/toast-store";
 import { settleDebts } from "@/lib/utils/settlements";
 import { formatCurrency } from "@/lib/utils";
 import type { TabEntryView } from "@/lib/types";
 
+function DebtWeb({
+  settlements,
+}: {
+  settlements: Array<{
+    fromUserId: string;
+    fromName: string;
+    toUserId: string;
+    toName: string;
+    amount: number;
+  }>;
+}) {
+  const nodes = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const s of settlements) {
+      map.set(s.fromUserId, s.fromName);
+      map.set(s.toUserId, s.toName);
+    }
+    return [...map.entries()].map(([id, name], index, arr) => {
+      const angle = (Math.PI * 2 * index) / Math.max(arr.length, 1) - Math.PI / 2;
+      return {
+        id,
+        name,
+        x: 150 + Math.cos(angle) * 95,
+        y: 150 + Math.sin(angle) * 95,
+      };
+    });
+  }, [settlements]);
+
+  if (settlements.length === 0) {
+    return (
+      <p className="text-sm text-[var(--ink-muted)]">No webs to weave — all settled.</p>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 300 300" className="mx-auto h-64 w-full max-w-sm">
+      {settlements.map((s) => {
+        const from = nodes.find((n) => n.id === s.fromUserId);
+        const to = nodes.find((n) => n.id === s.toUserId);
+        if (!from || !to) return null;
+        return (
+          <g key={`${s.fromUserId}-${s.toUserId}-${s.amount}`}>
+            <line
+              x1={from.x}
+              y1={from.y}
+              x2={to.x}
+              y2={to.y}
+              stroke="rgba(31,111,84,0.55)"
+              strokeWidth={Math.min(6, 1.5 + s.amount / 20)}
+            />
+            <text
+              x={(from.x + to.x) / 2}
+              y={(from.y + to.y) / 2 - 6}
+              textAnchor="middle"
+              className="fill-[var(--accent-deep)] text-[10px] font-semibold"
+            >
+              {formatCurrency(s.amount)}
+            </text>
+          </g>
+        );
+      })}
+      {nodes.map((node) => (
+        <g key={node.id}>
+          <circle cx={node.x} cy={node.y} r={22} fill="rgba(255,255,255,0.85)" stroke="rgba(31,111,84,0.4)" />
+          <text
+            x={node.x}
+            y={node.y + 4}
+            textAnchor="middle"
+            className="fill-[var(--ink)] text-[10px] font-bold"
+          >
+            {node.name.slice(0, 6)}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
   const [tabs, setTabs] = useState(initialTabs);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
+  const [burst, setBurst] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const settlements = useMemo(
@@ -43,6 +123,8 @@ export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
         setTabs((prev) => [json.data!, ...prev]);
         setAmount("");
         setDescription("");
+        setBurst(true);
+        window.setTimeout(() => setBurst(false), 1100);
         toast("Expense added", { tone: "success" });
         return;
       }
@@ -52,24 +134,19 @@ export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
 
   return (
     <div className="space-y-8">
+      <ConfettiBurst show={burst} />
       <FadeIn>
-        <div>
-          <h1 className="font-display text-3xl">Tab Tracker</h1>
-          <p className="mt-2 max-w-xl text-[var(--ink-muted)]">
-            Log shared expenses and settle with the fewest peer-to-peer transfers.
+        <IslandCard emoji="🧾" title="Splitzy" accent="rgba(126, 184, 201, 0.4)">
+          <p className="text-sm text-[var(--ink-muted)]">
+            Log shared expenses, simplify to the fewest transfers, and watch the Debt Web.
           </p>
-        </div>
+        </IslandCard>
       </FadeIn>
 
       <FadeIn delay={0.05}>
-        <section className="glass-panel grid gap-4 rounded-2xl border border-[var(--line)] p-5 md:grid-cols-3">
+        <section className="glass-panel grid gap-4 rounded-2xl border border-white/40 p-5 md:grid-cols-3">
           <div className="group">
-            <Label
-              htmlFor="amount"
-              className="transition-colors group-focus-within:text-[var(--accent-deep)]"
-            >
-              Amount
-            </Label>
+            <Label htmlFor="amount">Amount</Label>
             <Input
               id="amount"
               className="mt-2"
@@ -80,12 +157,7 @@ export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
             />
           </div>
           <div className="group md:col-span-2">
-            <Label
-              htmlFor="description"
-              className="transition-colors group-focus-within:text-[var(--accent-deep)]"
-            >
-              Description
-            </Label>
+            <Label htmlFor="description">Description</Label>
             <Input
               id="description"
               className="mt-2"
@@ -103,6 +175,13 @@ export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
       </FadeIn>
 
       <FadeIn delay={0.08}>
+        <section className="rounded-[1.5rem] border border-white/40 bg-white/25 p-5 backdrop-blur-xl">
+          <h2 className="mb-3 font-island text-lg font-bold">🕸️ Debt Web</h2>
+          <DebtWeb settlements={settlements} />
+        </section>
+      </FadeIn>
+
+      <FadeIn delay={0.1}>
         <section>
           <h2 className="mb-3 text-lg font-medium">Suggested settlements</h2>
           {settlements.length === 0 ? (
@@ -130,7 +209,7 @@ export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
         <Stagger className="space-y-3">
           {tabs.map((tab) => (
             <StaggerItem key={tab.id}>
-              <div className="interactive-glow flex flex-wrap items-center justify-between gap-3 rounded-xl border border-transparent border-b-[var(--line)] py-3 hover:border-[var(--line)] hover:bg-[var(--bg-elevated)]/70 hover:px-3">
+              <div className="interactive-glow flex flex-wrap items-center justify-between gap-3 rounded-xl border border-transparent border-b-[var(--line)] py-3 hover:border-[var(--line)] hover:bg-white/40 hover:px-3">
                 <div>
                   <p className="font-medium">{tab.description}</p>
                   <p className="text-sm text-[var(--ink-muted)]">Paid by {tab.payerName}</p>
