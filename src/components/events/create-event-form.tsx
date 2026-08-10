@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { playSound } from "@/lib/sound/sfx";
 import { toast } from "@/lib/store/toast-store";
 
 export function CreateEventForm({ enabled }: { enabled: boolean }) {
@@ -20,6 +21,7 @@ export function CreateEventForm({ enabled }: { enabled: boolean }) {
   function submit() {
     startTransition(async () => {
       setError(null);
+      playSound("hereWeGoAgain");
       const response = await fetch("/api/events/new", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,9 +40,11 @@ export function CreateEventForm({ enabled }: { enabled: boolean }) {
       if (!json.success || !json.data) {
         const err = json.error ?? "Failed to create event";
         setError(err);
+        playSound("wrong");
         toast("Event not created", { description: err, tone: "error" });
         return;
       }
+      playSound("success");
       toast("Event created", { tone: "success" });
       router.push(`/events/${json.data.id}`);
       router.refresh();

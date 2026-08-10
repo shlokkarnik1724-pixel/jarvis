@@ -16,10 +16,13 @@ import {
   listRegrets,
   listSmokes,
   listVibePoll,
+  listLiveLocations,
+  listRideHomeSafety,
   recordBlackjackWin,
   setDesignatedDriver,
   setDrinkTier,
   setRegret,
+  shareLocation,
   voteVibePoll,
   bumpSmoke,
   type DrinkTierKey,
@@ -68,7 +71,17 @@ export async function GET(request: Request) {
       case "vibe-poll":
         return NextResponse.json(ok(listVibePoll(circleId)));
       case "lock":
-        return NextResponse.json(ok(listAttendance(circleId)));
+        return NextResponse.json(
+          ok({
+            attendance: listAttendance(circleId),
+            locations: listLiveLocations(circleId),
+            rideHome: listRideHomeSafety(circleId),
+          })
+        );
+      case "locations":
+        return NextResponse.json(ok({ locations: listLiveLocations(circleId) }));
+      case "ride-home":
+        return NextResponse.json(ok({ rows: listRideHomeSafety(circleId) }));
       case "blackjack":
         return NextResponse.json(
           ok({ wins: getBlackjackWins(circleId, session.user.id) })
@@ -159,7 +172,8 @@ export async function POST(request: Request) {
             circleId,
             userId: session.user.id,
             name,
-            score: Number(body.score ?? 5),
+            score: body.score !== undefined ? Number(body.score) : undefined,
+            slangId: body.slangId ? String(body.slangId) : undefined,
           })
         )
       );
@@ -172,11 +186,31 @@ export async function POST(request: Request) {
         name,
         action: body.clock === "out" ? "out" : "in",
         photoDataUrl: body.photoDataUrl ? String(body.photoDataUrl) : null,
+        lat: typeof body.lat === "number" ? body.lat : null,
+        lng: typeof body.lng === "number" ? body.lng : null,
+        shareLocation: Boolean(body.shareLocation),
       });
       if ("error" in result && result.error) {
         return NextResponse.json(fail(result.error), { status: 400 });
       }
       return NextResponse.json(ok(result));
+    }
+
+    if (feature === "locations" && action === "share") {
+      if (typeof body.lat !== "number" || typeof body.lng !== "number") {
+        return NextResponse.json(fail("Location required"), { status: 400 });
+      }
+      return NextResponse.json(
+        ok({
+          locations: shareLocation({
+            circleId,
+            userId: session.user.id,
+            name,
+            lat: body.lat,
+            lng: body.lng,
+          }),
+        })
+      );
     }
 
     if (feature === "blackjack" && action === "deal") {

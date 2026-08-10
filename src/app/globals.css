@@ -687,3 +687,43 @@ a {
     background: rgba(213, 221, 214, 0.55);
   }
 }
+
+/* —— Mobile app shell —— */
+.app-shell {
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-header {
+  padding-top: max(0.55rem, env(safe-area-inset-top));
+}
+
+.app-dock {
+  padding-left: max(0.35rem, env(safe-area-inset-left));
+  padding-right: max(0.35rem, env(safe-area-inset-right));
+}
+
+.debt-web-line {
+  stroke-dasharray: 6 10;
+  animation: debtDash 2.8s linear infinite;
+}
+
+@keyframes debtDash {
+  to {
+    stroke-dashoffset: -64;
+  }
+}
+
+@media (max-width: 767px) {
+  .feature-readable {
+    border-radius: 1.25rem;
+    padding: 0.9rem;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font-size: 16px; /* prevent iOS zoom on focus */
+  }
+}

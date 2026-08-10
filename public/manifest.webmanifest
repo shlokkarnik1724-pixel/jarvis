@@ -1,0 +1,17 @@
+{
+  "name": "Circle",
+  "short_name": "Circle",
+  "description": "Friend circle party app",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0b1410",
+  "theme_color": "#0b1410",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

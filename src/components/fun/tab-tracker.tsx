@@ -141,6 +141,7 @@ function DebtWeb({
               <path
                 d={`M ${from.x} ${from.y} Q ${qx} ${qy} ${to.x} ${to.y}`}
                 fill="none"
+                className="debt-web-line"
                 stroke="rgba(31,111,84,0.55)"
                 strokeWidth={Math.min(8, 2 + s.amount / 400)}
                 markerEnd="url(#debtArrow)"

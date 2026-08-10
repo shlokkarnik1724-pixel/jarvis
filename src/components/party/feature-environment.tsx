@@ -32,7 +32,7 @@ export function FeatureEnvironment({
         </div>
       ) : null}
 
-      <div className="feature-readable rounded-[1.75rem] border border-white/50 bg-[#f7faf8] p-4 text-[var(--ink)] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] md:p-6">
+      <div className="feature-readable relative z-10 rounded-[1.75rem] border border-white/50 bg-[#f7faf8] p-3 text-[var(--ink)] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] sm:p-4 md:p-6">
         {children}
       </div>
     </div>

@@ -54,6 +54,11 @@ type PartyState = {
   ddUserId: string | null;
   blackjackWins: Record<string, number>;
   smokes: Record<string, { cigarettes: number; greens: number }>;
+  locations: Record<
+    string,
+    { lat: number; lng: number; name: string; ts: string; expiresAt: string }
+  >;
+  vibeSlang: Array<{ userId: string; name: string; slangId: string; score: number; ts: string }>;
 };
 
 function partyBucket(circleId: string): PartyState {
@@ -70,9 +75,13 @@ function partyBucket(circleId: string): PartyState {
       ddUserId: null,
       blackjackWins: {},
       smokes: {},
+      locations: {},
+      vibeSlang: [],
     };
   }
   if (!state.party.smokes) state.party.smokes = {};
+  if (!state.party.locations) state.party.locations = {};
+  if (!state.party.vibeSlang) state.party.vibeSlang = [];
   return state.party;
 }
 
@@ -293,31 +302,72 @@ export function setRegret(input: {
   return { entry, regrets: listRegrets(input.circleId) };
 }
 
+export const VIBE_SLANGS = [
+  { id: "mood_sucks", score: 1, label: "this mood sucks", emoji: "🫠" },
+  { id: "people_suck", score: 2, label: "these people suck", emoji: "😤" },
+  { id: "mid", score: 3, label: "mid as hell", emoji: "😐" },
+  { id: "coping", score: 4, label: "lowkey coping", emoji: "🫠" },
+  { id: "whatever", score: 5, label: "it's giving whatever", emoji: "🤷" },
+  { id: "vibing", score: 6, label: "vibes are vibing", emoji: "✨" },
+  { id: "great", score: 7, label: "party is going great", emoji: "🎉" },
+  { id: "so_back", score: 8, label: "we're so back", emoji: "🔥" },
+  { id: "main", score: 9, label: "main character energy", emoji: "👑" },
+  { id: "feral", score: 10, label: "let's get naked", emoji: "😈" },
+] as const;
+
 export function listVibePoll(circleId: string) {
-  const votes = partyBucket(circleId).vibeVotes;
-  const buckets = Array.from({ length: 10 }, (_, i) => ({
-    score: i + 1,
-    count: votes.filter((v) => v.score === i + 1).length,
+  const party = partyBucket(circleId);
+  const votes = party.vibeVotes;
+  const slangVotes = party.vibeSlang;
+  const buckets = VIBE_SLANGS.map((slang) => ({
+    score: slang.score,
+    slangId: slang.id,
+    label: slang.label,
+    emoji: slang.emoji,
+    count:
+      slangVotes.filter((v) => v.slangId === slang.id).length ||
+      votes.filter((v) => v.score === slang.score).length,
   }));
+  const scored = buckets.flatMap((b) => Array.from({ length: b.count }, () => b.score));
   const avg =
-    votes.length === 0
-      ? 0
-      : votes.reduce((sum, v) => sum + v.score, 0) / votes.length;
-  return { votes, buckets, avg: Math.round(avg * 10) / 10, total: votes.length };
+    scored.length === 0 ? 0 : scored.reduce((sum, n) => sum + n, 0) / scored.length;
+  const top = [...buckets].sort((a, b) => b.count - a.count)[0];
+  return {
+    votes,
+    slangVotes,
+    buckets,
+    slangs: VIBE_SLANGS,
+    avg: Math.round(avg * 10) / 10,
+    total: buckets.reduce((sum, b) => sum + b.count, 0),
+    topLabel: top && top.count > 0 ? top.label : null,
+  };
 }
 
 export function voteVibePoll(input: {
   circleId: string;
   userId: string;
   name: string;
-  score: number;
+  score?: number;
+  slangId?: string;
 }) {
   const party = partyBucket(input.circleId);
+  const slang =
+    VIBE_SLANGS.find((s) => s.id === input.slangId) ??
+    VIBE_SLANGS.find((s) => s.score === input.score) ??
+    VIBE_SLANGS[4];
   party.vibeVotes = party.vibeVotes.filter((v) => v.userId !== input.userId);
   party.vibeVotes.push({
     userId: input.userId,
     name: input.name,
-    score: Math.min(10, Math.max(1, input.score)),
+    score: slang.score,
+    ts: new Date().toISOString(),
+  });
+  party.vibeSlang = party.vibeSlang.filter((v) => v.userId !== input.userId);
+  party.vibeSlang.push({
+    userId: input.userId,
+    name: input.name,
+    slangId: slang.id,
+    score: slang.score,
     ts: new Date().toISOString(),
   });
   return listVibePoll(input.circleId);
@@ -335,10 +385,14 @@ export function clockAttendance(input: {
   name: string;
   action: "in" | "out";
   photoDataUrl: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  shareLocation?: boolean;
 }) {
   if (!input.photoDataUrl) {
     return { error: "Selfie required to lock in/out." };
   }
+  const party = partyBucket(input.circleId);
   const entry = {
     id: randomUUID(),
     userId: input.userId,
@@ -347,8 +401,99 @@ export function clockAttendance(input: {
     photoDataUrl: input.photoDataUrl,
     ts: new Date().toISOString(),
   };
-  partyBucket(input.circleId).attendance.unshift(entry);
-  return { entry, attendance: listAttendance(input.circleId) };
+  party.attendance.unshift(entry);
+
+  if (
+    input.shareLocation &&
+    input.action === "in" &&
+    typeof input.lat === "number" &&
+    typeof input.lng === "number"
+  ) {
+    party.locations[input.userId] = {
+      lat: input.lat,
+      lng: input.lng,
+      name: input.name,
+      ts: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    };
+  }
+
+  return {
+    entry,
+    attendance: listAttendance(input.circleId),
+    locations: listLiveLocations(input.circleId),
+  };
+}
+
+function ensureDemoLocations(circleId: string) {
+  const party = partyBucket(circleId);
+  if (Object.keys(party.locations).length > 0) return;
+  const members = getDemoMembers();
+  const pins = [
+    { lat: 18.5204, lng: 73.8567 },
+    { lat: 18.5362, lng: 73.893 },
+    { lat: 18.5089, lng: 73.926 },
+    { lat: 18.559, lng: 73.7867 },
+    { lat: 18.4575, lng: 73.8507 },
+    { lat: 18.564, lng: 73.907 },
+    { lat: 18.5018, lng: 73.8636 },
+  ];
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  members.forEach((m, i) => {
+    const pin = pins[i % pins.length];
+    if (!pin) return;
+    party.locations[m.userId] = {
+      lat: pin.lat + (i % 3) * 0.002,
+      lng: pin.lng + (i % 2) * 0.002,
+      name: m.nickname || m.name,
+      ts: new Date().toISOString(),
+      expiresAt,
+    };
+  });
+}
+
+export function listLiveLocations(circleId: string) {
+  ensureDemoLocations(circleId);
+  const now = Date.now();
+  const party = partyBucket(circleId);
+  return Object.entries(party.locations)
+    .map(([userId, loc]) => ({ userId, ...loc }))
+    .filter((loc) => new Date(loc.expiresAt).getTime() > now)
+    .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
+}
+
+export function shareLocation(input: {
+  circleId: string;
+  userId: string;
+  name: string;
+  lat: number;
+  lng: number;
+}) {
+  const party = partyBucket(input.circleId);
+  party.locations[input.userId] = {
+    lat: input.lat,
+    lng: input.lng,
+    name: input.name,
+    ts: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  };
+  return listLiveLocations(input.circleId);
+}
+
+export function listRideHomeSafety(circleId: string) {
+  return listDrinkTiers(circleId).map((row) => {
+    const worthy = row.isDD || row.level <= 1;
+    let verdict = "🟢 Worthy driver";
+    if (row.isDD) verdict = "🧢 Designated Driver (sacred)";
+    else if (row.level >= 5) verdict = "🚫 NOT WORTHY DRIVER — call a cab";
+    else if (row.level >= 3) verdict = "⚠️ Borderline — do not take the keys";
+    else if (row.level >= 2) verdict = "🟡 Maybe wait an hour";
+    return {
+      ...row,
+      worthy,
+      verdict,
+    };
+  });
 }
 
 export function recordBlackjackWin(circleId: string, userId: string) {

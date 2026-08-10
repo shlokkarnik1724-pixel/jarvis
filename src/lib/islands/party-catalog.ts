@@ -172,7 +172,7 @@ export function circleLayout(
     const angle = (Math.PI * 2 * i) / count - Math.PI / 2;
     return {
       x: 50 + radiusPercent * Math.cos(angle),
-      y: 52 + radiusPercent * Math.sin(angle) * 0.9,
+      y: 50 + radiusPercent * Math.sin(angle),
     };
   });
 }

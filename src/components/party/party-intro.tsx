@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { duration, easeOut } from "@/lib/motion";
+import { playSound } from "@/lib/sound/sfx";
 
 const INTRO_KEY = "circle-intro-day";
 
@@ -88,6 +89,7 @@ export function PartyIntro() {
     } catch {
       // ignore
     }
+    playSound("cheers");
     setDismissed(true);
   }
 

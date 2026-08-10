@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/utils";
+import { playSound } from "@/lib/sound/sfx";
 import { toast } from "@/lib/store/toast-store";
 import type { ChatMessageView, MemberPartyProfile } from "@/lib/types";
 
@@ -52,6 +53,7 @@ export function GroupChatClient({ currentUserId }: { currentUserId: string }) {
     const body = draft.trim();
     if (!body) return;
     startTransition(async () => {
+      playSound("send");
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

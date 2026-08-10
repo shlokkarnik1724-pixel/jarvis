@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { IslandCard, ConfettiBurst } from "@/components/islands/island-card";
 import { Button } from "@/components/ui/button";
 import { partyGet, partyPost } from "@/lib/party/client";
+import { playSound } from "@/lib/sound/sfx";
 import { toast } from "@/lib/store/toast-store";
 import type { SmokeRowView } from "@/lib/types";
 
@@ -38,6 +39,7 @@ export function SmokesClient() {
       toast(kind === "cigarettes" ? "Sutta logged" : "Greens logged", {
         tone: "success",
       });
+      playSound(kind === "cigarettes" ? "sutta" : "danger");
     });
   }
 

@@ -10,6 +10,7 @@ import type {
   EventRsvpView,
   ShoppingItemView,
 } from "@/lib/types";
+import { playSound } from "@/lib/sound/sfx";
 
 interface EventActionsProps {
   eventId: string;
@@ -67,6 +68,7 @@ export function EventActions({
 
   function vote(status: EventRsvpStatus) {
     startTransition(async () => {
+      playSound("vote");
       const response = await fetch(`/api/events/${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,6 +132,7 @@ export function EventActions({
 
   function addItem() {
     startTransition(async () => {
+      playSound("hereWeGoAgain");
       const response = await fetch(`/api/events/${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

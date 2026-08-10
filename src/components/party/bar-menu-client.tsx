@@ -6,6 +6,7 @@ import { IslandCard } from "@/components/islands/island-card";
 import { Button } from "@/components/ui/button";
 import { DRINK_TIERS } from "@/lib/party/systems";
 import { partyGet, partyPost } from "@/lib/party/client";
+import { playSound } from "@/lib/sound/sfx";
 import { toast } from "@/lib/store/toast-store";
 
 type TierRow = {
@@ -66,6 +67,7 @@ export function BarMenuClient() {
             onClick={() =>
               startTransition(async () => {
                 try {
+                  playSound(tier.level >= 3 ? "cheers" : "clink");
                   const data = await partyPost<{ tiers: TierRow[]; nags: string[] }>({
                     feature: "bar",
                     action: "tier",
@@ -75,6 +77,7 @@ export function BarMenuClient() {
                   setNags(data.nags);
                   toast("Tier updated", { description: tier.label, tone: "success" });
                 } catch (error) {
+                  playSound("wrong");
                   toast("Couldn’t set tier", {
                     description: error instanceof Error ? error.message : undefined,
                     tone: "error",
@@ -112,6 +115,7 @@ export function BarMenuClient() {
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
+                  playSound("tap");
                   const data = await partyPost<{ tiers: TierRow[]; nags: string[] }>({
                     feature: "bar",
                     action: "dd",
@@ -127,6 +131,41 @@ export function BarMenuClient() {
           </div>
         ))}
       </div>
+
+      <RideHomePreview />
     </div>
+  );
+}
+
+function RideHomePreview() {
+  const [rows, setRows] = useState<
+    Array<{ userId: string; name: string; verdict: string; worthy: boolean }>
+  >([]);
+
+  useEffect(() => {
+    void partyGet<{ rows: Array<{ userId: string; name: string; verdict: string; worthy: boolean }> }>(
+      "ride-home"
+    ).then((data) => setRows(data.rows));
+  }, []);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <section className="rounded-[1.5rem] border border-white/40 bg-white/70 p-4">
+      <h2 className="font-island text-lg font-bold">🚕 Ride home safely</h2>
+      <p className="mt-1 text-sm text-[var(--ink-muted)]">
+        Auto-flagged from drink tiers — no keys for the not-worthy.
+      </p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {rows.map((row) => (
+          <li key={row.userId} className="flex justify-between gap-2">
+            <span>{row.name}</span>
+            <span className={row.worthy ? "text-[var(--ok)]" : "font-semibold text-[var(--danger)]"}>
+              {row.verdict}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
