@@ -174,6 +174,10 @@ export async function listEvents(
       shoppingCount: eventShopping.length,
       claimedCount: eventShopping.filter((s) => s.claimer_id).length,
       checkedInByMe: eventCheckins.some((c) => c.user_id === userId),
+      hostId: null,
+      hostName: null,
+      rsvps: [],
+      myRsvp: null,
     };
   });
 }
@@ -225,6 +229,10 @@ export async function getEventDetail(
       shoppingCount: shoppingViews.length,
       claimedCount: shoppingViews.filter((s) => s.claimerId).length,
       checkedInByMe: (checkins ?? []).some((c) => c.user_id === userId),
+      hostId: null,
+      hostName: null,
+      rsvps: [],
+      myRsvp: null,
     },
     shopping: shoppingViews,
   };

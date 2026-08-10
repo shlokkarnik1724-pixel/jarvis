@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/lib/store/toast-store";
 
 export function VaultUpload({ enabled }: { enabled: boolean }) {
   const router = useRouter();
@@ -36,17 +38,23 @@ export function VaultUpload({ enabled }: { enabled: boolean }) {
         error?: string;
       };
       if (!json.success) {
-        setError(json.error ?? "Upload failed");
+        const err = json.error ?? "Upload failed";
+        setError(err);
+        toast("Upload failed", { description: err, tone: "error" });
         return;
       }
       setFile(null);
       setCaption("");
+      toast("Photo secured", {
+        description: "Streaming through the vault canvas.",
+        tone: "success",
+      });
       router.refresh();
     });
   }
 
   return (
-    <section className="space-y-3 border-y border-[var(--line)] py-6">
+    <section className="glass-panel space-y-3 rounded-2xl border border-[var(--line)] p-5">
       <h2 className="text-lg font-medium">Upload to vault</h2>
       <Input
         type="file"
@@ -61,6 +69,12 @@ export function VaultUpload({ enabled }: { enabled: boolean }) {
       <Button disabled={pending || !file} onClick={upload}>
         {pending ? "Uploading…" : "Upload securely"}
       </Button>
+      {pending ? (
+        <div className="space-y-2 pt-1" role="status" aria-label="Uploading">
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-4/5" />
+        </div>
+      ) : null}
       {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
     </section>
   );

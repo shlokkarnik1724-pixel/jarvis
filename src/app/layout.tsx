@@ -1,5 +1,5 @@
-import { Fraunces, Outfit } from "next/font/google";
-import type { Metadata } from "next";
+import { Fraunces, Fredoka, Outfit } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -13,10 +13,40 @@ const fraunces = Fraunces({
   subsets: ["latin"],
 });
 
+const fredoka = Fredoka({
+  variable: "--font-island",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Circle — Private Social Hub",
-  description:
-    "A localized, privacy-first social portal for closed friend groups: events, vault, games, and tabs.",
+  title: "Circle",
+  description: "Your closed friend circle — party rooms, tabs, and chaos.",
+  applicationName: "Circle",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Circle",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  manifest: "/manifest.webmanifest",
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0b1410" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1410" },
+  ],
 };
 
 export default function RootLayout({
@@ -25,8 +55,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${fraunces.variable} h-full`}>
-      <body className="min-h-full flex flex-col font-sans antialiased">
+    <html
+      lang="en"
+      className={`${outfit.variable} ${fraunces.variable} ${fredoka.variable} h-full`}
+    >
+      <body className="min-h-dvh flex flex-col overscroll-none font-sans antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

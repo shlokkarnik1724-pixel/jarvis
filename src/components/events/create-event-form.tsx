@@ -5,6 +5,8 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { playSound } from "@/lib/sound/sfx";
+import { toast } from "@/lib/store/toast-store";
 
 export function CreateEventForm({ enabled }: { enabled: boolean }) {
   const router = useRouter();
@@ -19,6 +21,7 @@ export function CreateEventForm({ enabled }: { enabled: boolean }) {
   function submit() {
     startTransition(async () => {
       setError(null);
+      playSound("hereWeGoAgain");
       const response = await fetch("/api/events/new", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,20 +38,30 @@ export function CreateEventForm({ enabled }: { enabled: boolean }) {
         error?: string;
       };
       if (!json.success || !json.data) {
-        setError(json.error ?? "Failed to create event");
+        const err = json.error ?? "Failed to create event";
+        setError(err);
+        playSound("wrong");
+        toast("Event not created", { description: err, tone: "error" });
         return;
       }
+      playSound("success");
+      toast("Event created", { tone: "success" });
       router.push(`/events/${json.data.id}`);
       router.refresh();
     });
   }
 
   return (
-    <section className="space-y-3 border-y border-[var(--line)] py-6">
+    <section className="glass-panel space-y-3 rounded-2xl border border-[var(--line)] p-5">
       <h2 className="text-lg font-medium">Create event</h2>
       <div className="grid gap-3 md:grid-cols-3">
-        <div>
-          <Label htmlFor="title">Title</Label>
+        <div className="group">
+          <Label
+            htmlFor="title"
+            className="transition-colors group-focus-within:text-[var(--accent-deep)]"
+          >
+            Title
+          </Label>
           <Input
             id="title"
             className="mt-1"
@@ -56,8 +69,13 @@ export function CreateEventForm({ enabled }: { enabled: boolean }) {
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-        <div>
-          <Label htmlFor="date">Date & time</Label>
+        <div className="group">
+          <Label
+            htmlFor="date"
+            className="transition-colors group-focus-within:text-[var(--accent-deep)]"
+          >
+            Date & time
+          </Label>
           <Input
             id="date"
             className="mt-1"
@@ -66,8 +84,13 @@ export function CreateEventForm({ enabled }: { enabled: boolean }) {
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
-        <div>
-          <Label htmlFor="location">Location</Label>
+        <div className="group">
+          <Label
+            htmlFor="location"
+            className="transition-colors group-focus-within:text-[var(--accent-deep)]"
+          >
+            Location
+          </Label>
           <Input
             id="location"
             className="mt-1"

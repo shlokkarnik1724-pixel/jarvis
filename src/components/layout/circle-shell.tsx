@@ -1,34 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  CalendarDays,
-  Gamepad2,
-  LayoutDashboard,
-  MessageSquareQuote,
-  Settings,
-  Sparkles,
-  Trophy,
-  Vault,
-  Wallet,
-  Menu,
-  X,
-} from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { PartyIntro } from "@/components/party/party-intro";
+import { FeatureEnvironment } from "@/components/party/feature-environment";
+import { AmbientGifField } from "@/components/party/ambient-gif-field";
+import { StealthGate } from "@/components/party/stealth-gate";
+import { NotificationCenter } from "@/components/party/notification-center";
+import { BackToCircleBubble } from "@/components/party/back-to-circle";
+import { PageTransition } from "@/components/motion/page-transition";
+import { StatusPulse } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-
-const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/vault", label: "Photo Vault", icon: Vault },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/fun/vibe", label: "Vibe Gen", icon: Sparkles },
-  { href: "/fun/roast-toast", label: "Roast & Toast", icon: MessageSquareQuote },
-  { href: "/fun/tabs", label: "Tab Tracker", icon: Wallet },
-  { href: "/games", label: "Games", icon: Gamepad2 },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+import { PARTY_ISLANDS, themeForPath } from "@/lib/islands/party-catalog";
+import { armSounds, playSound } from "@/lib/sound/sfx";
+import { cn } from "@/lib/utils";
 
 interface CircleShellProps {
   circleName: string;
@@ -37,6 +23,14 @@ interface CircleShellProps {
   children: React.ReactNode;
 }
 
+const MOBILE_DOCK = [
+  { href: "/dashboard", emoji: "🌀", label: "Home" },
+  { href: "/fun/chat", emoji: "💬", label: "Chat" },
+  { href: "/fun/tabs", emoji: "💸", label: "Tabs" },
+  { href: "/fun/bar", emoji: "🍺", label: "Bar" },
+  { href: "/events", emoji: "📅", label: "Hang" },
+];
+
 export function CircleShell({
   circleName,
   userName,
@@ -44,116 +38,141 @@ export function CircleShell({
   children,
 }: CircleShellProps) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const isHome = pathname === "/dashboard";
+  const theme = themeForPath(pathname);
+
+  useEffect(() => {
+    function arm() {
+      armSounds();
+      window.removeEventListener("pointerdown", arm);
+    }
+    window.addEventListener("pointerdown", arm, { once: true });
+    return () => window.removeEventListener("pointerdown", arm);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-24 top-0 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,var(--mesh-a),transparent_70%)] blur-2xl animate-drift" />
-        <div className="absolute right-[-80px] top-40 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle_at_center,var(--mesh-b),transparent_68%)] blur-2xl animate-drift-delayed" />
-        <div className="absolute bottom-[-120px] left-1/3 h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle_at_center,var(--mesh-c),transparent_70%)] blur-2xl" />
-      </div>
+    <StealthGate>
+      <div
+        className={cn(
+          "app-shell relative min-h-dvh text-white",
+          `theme-${theme}`
+        )}
+      >
+        <PartyIntro />
+        <div className="party-ocean pointer-events-none fixed inset-0 -z-10" />
+        <div className="party-lights pointer-events-none fixed inset-0 -z-10" aria-hidden />
+        <div className="party-orbs pointer-events-none fixed inset-0 -z-10" aria-hidden />
+        <div className="party-particles pointer-events-none fixed inset-0 -z-10 opacity-40" aria-hidden />
+        {!isHome ? <AmbientGifField density="light" className="fixed opacity-80" /> : null}
 
-      <div className="mx-auto flex min-h-screen max-w-7xl">
-        <aside
-          className={cn(
-            "fixed inset-y-0 left-0 z-40 w-72 border-r border-[var(--line)] bg-[var(--bg-elevated)]/95 backdrop-blur-md transition-transform duration-300 lg:static lg:translate-x-0",
-            open ? "translate-x-0" : "-translate-x-full"
-          )}
-        >
-          <div className="flex h-full flex-col p-5">
-            <div className="mb-8 flex items-start justify-between gap-3">
-              <div>
-                <p className="font-display text-2xl tracking-tight text-[var(--ink)]">
-                  Circle
-                </p>
-                <p className="mt-1 text-sm text-[var(--ink-muted)]">{circleName}</p>
-              </div>
-              <button
-                type="button"
-                className="lg:hidden"
-                onClick={() => setOpen(false)}
-                aria-label="Close menu"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        {!isHome ? <BackToCircleBubble /> : null}
 
-            <nav className="flex flex-1 flex-col gap-1">
-              {NAV.map((item) => {
-                const active =
-                  pathname === item.href || pathname.startsWith(`${item.href}/`);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                      active
-                        ? "bg-[var(--accent-soft)] text-[var(--accent-deep)]"
-                        : "text-[var(--ink-muted)] hover:bg-[var(--bg)] hover:text-[var(--ink)]"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="mt-6 border-t border-[var(--line)] pt-4 text-sm">
-              <p className="font-medium">{userName}</p>
-              {demo ? (
-                <p className="mt-1 text-[var(--ink-muted)]">Demo session</p>
-              ) : null}
-              <form action="/api/auth/logout" method="post" className="mt-3">
-                <Button type="submit" variant="secondary" size="sm" className="w-full">
-                  Sign out
-                </Button>
-              </form>
-            </div>
+        <header className="app-header sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-white/20 bg-black/60 px-3 py-2.5 backdrop-blur-xl sm:px-4 lg:px-8">
+          <div className={cn("min-w-0", !isHome && "pl-14 sm:pl-36")}>
+            <LinkHome isHome={isHome} />
+            <p className="truncate text-[11px] font-medium text-white drop-shadow sm:text-xs">
+              {circleName} · {userName}
+              {demo ? " · demo" : ""}
+            </p>
           </div>
-        </aside>
+          <div className="flex items-center gap-2">
+            <NotificationCenter />
+            {demo ? <StatusPulse tone="accent" /> : null}
+            <form action="/api/auth/logout" method="post">
+              <Button
+                type="submit"
+                size="sm"
+                variant="secondary"
+                className="min-h-10 border-white/25 bg-white/15 px-3 text-white"
+                onClick={() => playSound("tap")}
+              >
+                Sign out
+              </Button>
+            </form>
+          </div>
+        </header>
 
-        {open ? (
-          <button
-            type="button"
-            className="fixed inset-0 z-30 bg-black/30 lg:hidden"
-            aria-label="Close overlay"
-            onClick={() => setOpen(false)}
-          />
+        {!isHome ? (
+          <nav className="scrollbar-none sticky top-[52px] z-30 hidden gap-2 overflow-x-auto border-b border-white/15 bg-black/40 px-3 py-2 backdrop-blur-md md:flex">
+            {PARTY_ISLANDS.slice(0, 8).map((island) => {
+              const active =
+                pathname === island.href || pathname.startsWith(`${island.href}/`);
+              return (
+                <Link
+                  key={island.href}
+                  href={island.href}
+                  onClick={() => playSound("tap")}
+                  className={cn(
+                    "shrink-0 rounded-full border px-3 py-2 text-sm font-medium transition active:scale-95",
+                    active
+                      ? "border-white/55 bg-white/25 text-white"
+                      : "border-white/20 bg-black/25 text-white/85 hover:bg-white/15"
+                  )}
+                >
+                  {island.emoji} {island.title}
+                </Link>
+              );
+            })}
+          </nav>
         ) : null}
 
-        <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg)]/80 px-4 py-3 backdrop-blur-md lg:px-8">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="rounded-lg border border-[var(--line)] p-2 lg:hidden"
-                onClick={() => setOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu className="h-4 w-4" />
-              </button>
-              <div className="flex items-center gap-2 text-sm text-[var(--ink-muted)]">
-                <CalendarDays className="h-4 w-4" />
-                Private circle hub
-              </div>
-            </div>
-            <Link
-              href="/events"
-              className="text-sm font-medium text-[var(--accent-deep)] hover:underline"
-            >
-              All events
-            </Link>
-          </header>
-          <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8 animate-fade-up">
-            {children}
-          </main>
-        </div>
+        <main
+          className={cn(
+            "relative mx-auto w-full pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8",
+            isHome
+              ? "max-w-6xl px-3 py-3 sm:px-4 md:px-6 md:py-4"
+              : "max-w-5xl px-3 py-5 sm:px-4 md:py-8 lg:px-8"
+          )}
+        >
+          <PageTransition>
+            {isHome ? children : <FeatureEnvironment>{children}</FeatureEnvironment>}
+          </PageTransition>
+        </main>
+
+        <nav className="app-dock fixed inset-x-0 bottom-0 z-50 border-t border-white/15 bg-black/80 px-2 pt-2 backdrop-blur-xl md:hidden">
+          <div className="mx-auto flex max-w-lg items-stretch justify-between gap-1 pb-[env(safe-area-inset-bottom)]">
+            {MOBILE_DOCK.map((item) => {
+              const active =
+                item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => playSound("tap")}
+                  className={cn(
+                    "flex min-h-12 flex-1 flex-col items-center justify-center rounded-2xl px-1 py-1 text-[10px] font-semibold tracking-wide",
+                    active ? "bg-white/20 text-white" : "text-white/70"
+                  )}
+                >
+                  <span className="text-lg leading-none">{item.emoji}</span>
+                  <span className="mt-1">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
       </div>
-    </div>
+    </StealthGate>
+  );
+}
+
+function LinkHome({ isHome }: { isHome: boolean }) {
+  if (isHome) {
+    return (
+      <p className="font-island text-base font-extrabold tracking-tight text-white drop-shadow sm:text-lg">
+        🌀 Circle
+      </p>
+    );
+  }
+  return (
+    <Link
+      href="/dashboard"
+      onClick={() => playSound("tap")}
+      className="font-island text-base font-extrabold tracking-tight text-white drop-shadow hover:opacity-90 sm:text-lg"
+    >
+      🌀 Circle
+    </Link>
   );
 }

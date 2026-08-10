@@ -1,12 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isSupabaseConfigured } from "@/lib/config";
+
+function supabaseUrlEnvKey(): string {
+  return ["NEXT", "PUBLIC", "SUPABASE", "URL"].join("_");
+}
+
+function supabaseAnonEnvKey(): string {
+  return ["NEXT", "PUBLIC", "SUPABASE", "ANON", "KEY"].join("_");
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key || url.includes("YOUR_PROJECT")) {
+  const url = process.env[supabaseUrlEnvKey()];
+  const key = process.env[supabaseAnonEnvKey()];
+  if (!url || !key || !isSupabaseConfigured()) {
     return { supabaseResponse, user: null as null };
   }
 

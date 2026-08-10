@@ -35,6 +35,12 @@ enum ScoreType {
   event_attendance
   custom
   roast_toast
+  poll_win
+  bingo_win
+  hydration
+  debt_settled
+  vibe_check
+  joke_bump
 }
 
 model User {

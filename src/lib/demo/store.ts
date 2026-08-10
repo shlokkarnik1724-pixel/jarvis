@@ -3,6 +3,7 @@ import type {
   CircleMemberView,
   CircleSummary,
   CircleUser,
+  EventRsvpStatus,
   EventView,
   GameSessionView,
   GameType,
@@ -14,12 +15,18 @@ import type {
 } from "@/lib/types";
 import { createInitialState } from "@/lib/games/state-machine";
 
-const DEMO_USER_ID = "11111111-1111-4111-8111-111111111111";
-const DEMO_CIRCLE_ID = "22222222-2222-4222-8222-222222222222";
-const DEMO_EVENT_ID = "33333333-3333-4333-8333-333333333333";
+export const DEMO_USER_ID = "11111111-1111-4111-8111-111111111111";
+export const DEMO_CIRCLE_ID = "22222222-2222-4222-8222-222222222222";
+export const DEMO_EVENT_ID = "33333333-3333-4333-8333-333333333333";
 const DEMO_PHOTO_ID = "44444444-4444-4444-8444-444444444444";
-const DEMO_FRIEND_ID = "55555555-5555-4555-8555-555555555555";
-const DEMO_FRIEND_2 = "66666666-6666-4666-8666-666666666666";
+export const DEMO_MEET_ID = "55555555-5555-4555-8555-555555555555";
+export const DEMO_ARYAN_ID = "66666666-6666-4666-8666-666666666666";
+export const DEMO_ADITYA_ID = "77777777-7777-4777-8777-777777777777";
+export const DEMO_DARSHAN_ID = "88888888-8888-4888-8888-888888888888";
+export const DEMO_KEDAR_ID = "99999999-9999-4999-8999-999999999999";
+export const DEMO_KRISHNA_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+const DEMO_STORE_VERSION = 4;
 
 interface DemoStore {
   user: CircleUser;
@@ -37,7 +44,6 @@ interface DemoStore {
 }
 
 function buildDemoPng(): Uint8Array {
-  // Minimal valid 1x1 PNG (teal pixel) — vault stream demo asset
   const base64 =
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
   return Uint8Array.from(Buffer.from(base64, "base64"));
@@ -47,95 +53,167 @@ function createStore(): DemoStore {
   const now = new Date();
   const weekend = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
+  const members: CircleMemberView[] = [
+    {
+      userId: DEMO_USER_ID,
+      circleId: DEMO_CIRCLE_ID,
+      nickname: "Main Character",
+      role: "owner",
+      name: "Shlok Karnik",
+      email: "shlok@circle.local",
+      avatarUrl: null,
+    },
+    {
+      userId: DEMO_MEET_ID,
+      circleId: DEMO_CIRCLE_ID,
+      nickname: "MIT",
+      role: "member",
+      name: "Meet Shinde",
+      email: "meet@circle.local",
+      avatarUrl: null,
+    },
+    {
+      userId: DEMO_ARYAN_ID,
+      circleId: DEMO_CIRCLE_ID,
+      nickname: "Rev",
+      role: "member",
+      name: "Aryan Revankar",
+      email: "aryan@circle.local",
+      avatarUrl: null,
+    },
+    {
+      userId: DEMO_ADITYA_ID,
+      circleId: DEMO_CIRCLE_ID,
+      nickname: "Khalil",
+      role: "member",
+      name: "Aditya Khalil",
+      email: "aditya@circle.local",
+      avatarUrl: null,
+    },
+    {
+      userId: DEMO_DARSHAN_ID,
+      circleId: DEMO_CIRCLE_ID,
+      nickname: "Darsh",
+      role: "member",
+      name: "Darshan",
+      email: "darshan@circle.local",
+      avatarUrl: null,
+    },
+    {
+      userId: DEMO_KEDAR_ID,
+      circleId: DEMO_CIRCLE_ID,
+      nickname: "KP",
+      role: "member",
+      name: "Kedar Prabhu",
+      email: "kedar@circle.local",
+      avatarUrl: null,
+    },
+    {
+      userId: DEMO_KRISHNA_ID,
+      circleId: DEMO_CIRCLE_ID,
+      nickname: "Hemgude",
+      role: "member",
+      name: "Krishna Hemgude",
+      email: "krishna@circle.local",
+      avatarUrl: null,
+    },
+  ];
+
+  const rsvps = [
+    { userId: DEMO_USER_ID, name: "Shlok Karnik", status: "yes" as const },
+    { userId: DEMO_MEET_ID, name: "Meet Shinde", status: "yes" as const },
+    { userId: DEMO_ARYAN_ID, name: "Aryan Revankar", status: "maybe" as const },
+    { userId: DEMO_ADITYA_ID, name: "Aditya Khalil", status: "yes" as const },
+    { userId: DEMO_DARSHAN_ID, name: "Darshan", status: "yes" as const },
+    { userId: DEMO_KEDAR_ID, name: "Kedar Prabhu", status: "no" as const },
+    { userId: DEMO_KRISHNA_ID, name: "Krishna Hemgude", status: "maybe" as const },
+  ];
+
   return {
     user: {
       id: DEMO_USER_ID,
-      email: "you@circle.local",
-      name: "Alex Rivera",
+      email: "shlok@circle.local",
+      name: "Shlok Karnik",
       avatarUrl: null,
     },
     circle: {
       id: DEMO_CIRCLE_ID,
-      name: "The Inner Orbit",
-      inviteCode: "orbit42",
+      name: "Shlok's Circle",
+      inviteCode: "shlok7",
     },
-    members: [
-      {
-        userId: DEMO_USER_ID,
-        circleId: DEMO_CIRCLE_ID,
-        nickname: "Orbit Captain",
-        role: "owner",
-        name: "Alex Rivera",
-        email: "you@circle.local",
-        avatarUrl: null,
-      },
-      {
-        userId: DEMO_FRIEND_ID,
-        circleId: DEMO_CIRCLE_ID,
-        nickname: "Spark",
-        role: "member",
-        name: "Jordan Lee",
-        email: "jordan@circle.local",
-        avatarUrl: null,
-      },
-      {
-        userId: DEMO_FRIEND_2,
-        circleId: DEMO_CIRCLE_ID,
-        nickname: "Midnight",
-        role: "member",
-        name: "Sam Okonkwo",
-        email: "sam@circle.local",
-        avatarUrl: null,
-      },
-    ],
+    members,
     events: [
       {
         id: DEMO_EVENT_ID,
         circleId: DEMO_CIRCLE_ID,
-        title: "Rooftop Film Night",
+        title: "Friday Night Chaos",
         date: weekend.toISOString(),
-        location: "East River Overlook",
-        tags: ["outdoor", "movies", "snacks"],
-        checkinCount: 1,
-        shoppingCount: 3,
-        claimedCount: 1,
+        location: "Kedar's terrace · Andheri vibes",
+        tags: ["drinks", "sutta", "playlist"],
+        checkinCount: 2,
+        shoppingCount: 5,
+        claimedCount: 2,
         checkedInByMe: false,
+        hostId: DEMO_KEDAR_ID,
+        hostName: "Kedar Prabhu",
+        rsvps,
+        myRsvp: "yes",
       },
       {
         id: randomUUID(),
         circleId: DEMO_CIRCLE_ID,
-        title: "Sunday Brunch Circuit",
+        title: "Sunday Recovery Brunch",
         date: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        location: "Harbor Café",
-        tags: ["food", "catch-up"],
+        location: "Bandra café crawl",
+        tags: ["food", "hangover"],
         checkinCount: 0,
         shoppingCount: 0,
         claimedCount: 0,
         checkedInByMe: false,
+        hostId: DEMO_USER_ID,
+        hostName: "Shlok Karnik",
+        rsvps: [],
+        myRsvp: null,
       },
     ],
     shopping: [
       {
         id: randomUUID(),
         eventId: DEMO_EVENT_ID,
-        itemName: "Blanket stack",
-        quantity: "3",
-        claimerId: DEMO_FRIEND_ID,
-        claimerName: "Jordan Lee",
+        itemName: "Kingfisher / breezers",
+        quantity: "2 packs",
+        claimerId: DEMO_MEET_ID,
+        claimerName: "Meet Shinde",
       },
       {
         id: randomUUID(),
         eventId: DEMO_EVENT_ID,
-        itemName: "Popcorn cans",
-        quantity: "4",
+        itemName: "Ice + mixer",
+        quantity: "lots",
+        claimerId: DEMO_ARYAN_ID,
+        claimerName: "Aryan Revankar",
+      },
+      {
+        id: randomUUID(),
+        eventId: DEMO_EVENT_ID,
+        itemName: "Sutta pack (shared)",
+        quantity: "2",
         claimerId: null,
         claimerName: null,
       },
       {
         id: randomUUID(),
         eventId: DEMO_EVENT_ID,
-        itemName: "Citronella candles",
-        quantity: "2",
+        itemName: "Chips + maggi",
+        quantity: "enough for 7",
+        claimerId: null,
+        claimerName: null,
+      },
+      {
+        id: randomUUID(),
+        eventId: DEMO_EVENT_ID,
+        itemName: "Bluetooth speaker",
+        quantity: "1",
         claimerId: null,
         claimerName: null,
       },
@@ -144,34 +222,62 @@ function createStore(): DemoStore {
       {
         id: DEMO_PHOTO_ID,
         circleId: DEMO_CIRCLE_ID,
-        uploaderId: DEMO_FRIEND_ID,
-        uploaderName: "Jordan Lee",
+        uploaderId: DEMO_MEET_ID,
+        uploaderName: "Meet Shinde",
         mimeType: "image/png",
         createdAt: now.toISOString(),
-        captionHint: "Last summer hike",
+        captionHint: "Last rooftop night",
       },
     ],
     leaderboard: [
       {
-        userId: DEMO_FRIEND_ID,
-        name: "Jordan Lee",
-        nickname: "Spark",
-        totalPoints: 42,
-        breakdown: { game_win: 20, event_attendance: 12, custom: 10 },
+        userId: DEMO_MEET_ID,
+        name: "Meet Shinde",
+        nickname: "MIT",
+        totalPoints: 48,
+        breakdown: { game_win: 20, event_attendance: 16, custom: 12 },
       },
       {
         userId: DEMO_USER_ID,
-        name: "Alex Rivera",
-        nickname: "Orbit Captain",
-        totalPoints: 37,
-        breakdown: { game_win: 15, event_attendance: 14, roast_toast: 8 },
+        name: "Shlok Karnik",
+        nickname: "Main Character",
+        totalPoints: 44,
+        breakdown: { game_win: 18, event_attendance: 14, roast_toast: 12 },
       },
       {
-        userId: DEMO_FRIEND_2,
-        name: "Sam Okonkwo",
-        nickname: "Midnight",
-        totalPoints: 29,
-        breakdown: { game_win: 10, event_attendance: 11, custom: 8 },
+        userId: DEMO_ARYAN_ID,
+        name: "Aryan Revankar",
+        nickname: "Rev",
+        totalPoints: 36,
+        breakdown: { game_win: 14, event_attendance: 12, custom: 10 },
+      },
+      {
+        userId: DEMO_ADITYA_ID,
+        name: "Aditya Khalil",
+        nickname: "Khalil",
+        totalPoints: 31,
+        breakdown: { game_win: 12, event_attendance: 11, custom: 8 },
+      },
+      {
+        userId: DEMO_DARSHAN_ID,
+        name: "Darshan",
+        nickname: "Darsh",
+        totalPoints: 28,
+        breakdown: { game_win: 10, event_attendance: 10, custom: 8 },
+      },
+      {
+        userId: DEMO_KEDAR_ID,
+        name: "Kedar Prabhu",
+        nickname: "KP",
+        totalPoints: 27,
+        breakdown: { game_win: 8, event_attendance: 12, custom: 7 },
+      },
+      {
+        userId: DEMO_KRISHNA_ID,
+        name: "Krishna Hemgude",
+        nickname: "Hemgude",
+        totalPoints: 22,
+        breakdown: { game_win: 8, event_attendance: 8, custom: 6 },
       },
     ],
     tabs: [
@@ -179,27 +285,63 @@ function createStore(): DemoStore {
         id: randomUUID(),
         circleId: DEMO_CIRCLE_ID,
         payerId: DEMO_USER_ID,
-        payerName: "Alex Rivera",
-        amount: 86.4,
-        description: "Dinner at Harbor",
+        payerName: "Shlok Karnik",
+        amount: 2400,
+        description: "Friday liquor haul",
         createdAt: now.toISOString(),
       },
       {
         id: randomUUID(),
         circleId: DEMO_CIRCLE_ID,
-        payerId: DEMO_FRIEND_ID,
-        payerName: "Jordan Lee",
-        amount: 42,
-        description: "Rideshare pool",
+        payerId: DEMO_MEET_ID,
+        payerName: "Meet Shinde",
+        amount: 980,
+        description: "Uber pool + snacks",
         createdAt: now.toISOString(),
       },
       {
         id: randomUUID(),
         circleId: DEMO_CIRCLE_ID,
-        payerId: DEMO_FRIEND_2,
-        payerName: "Sam Okonkwo",
-        amount: 27.5,
-        description: "Snacks run",
+        payerId: DEMO_ARYAN_ID,
+        payerName: "Aryan Revankar",
+        amount: 650,
+        description: "Sutta + ice run",
+        createdAt: now.toISOString(),
+      },
+      {
+        id: randomUUID(),
+        circleId: DEMO_CIRCLE_ID,
+        payerId: DEMO_ADITYA_ID,
+        payerName: "Aditya Khalil",
+        amount: 1200,
+        description: "Dinner before the hang",
+        createdAt: now.toISOString(),
+      },
+      {
+        id: randomUUID(),
+        circleId: DEMO_CIRCLE_ID,
+        payerId: DEMO_DARSHAN_ID,
+        payerName: "Darshan",
+        amount: 420,
+        description: "Extra mixers",
+        createdAt: now.toISOString(),
+      },
+      {
+        id: randomUUID(),
+        circleId: DEMO_CIRCLE_ID,
+        payerId: DEMO_KEDAR_ID,
+        payerName: "Kedar Prabhu",
+        amount: 800,
+        description: "Host supplies (cups, trash bags)",
+        createdAt: now.toISOString(),
+      },
+      {
+        id: randomUUID(),
+        circleId: DEMO_CIRCLE_ID,
+        payerId: DEMO_KRISHNA_ID,
+        payerName: "Krishna Hemgude",
+        amount: 350,
+        description: "Late-night maggi",
         createdAt: now.toISOString(),
       },
     ],
@@ -208,8 +350,8 @@ function createStore(): DemoStore {
         id: randomUUID(),
         circleId: DEMO_CIRCLE_ID,
         kind: "toast",
-        body: "To the friend who always brings the aux cord and the chaos.",
-        voteScore: 4,
+        body: "To Shlok for hosting the chaos and somehow surviving it.",
+        voteScore: 5,
         createdAt: now.toISOString(),
         myVote: null,
       },
@@ -217,8 +359,8 @@ function createStore(): DemoStore {
         id: randomUUID(),
         circleId: DEMO_CIRCLE_ID,
         kind: "roast",
-        body: "Someone still thinks 'fashionably late' means the next calendar day.",
-        voteScore: 2,
+        body: "Meet still thinks 'one more sutta' means three.",
+        voteScore: 4,
         createdAt: now.toISOString(),
         myVote: null,
       },
@@ -240,7 +382,10 @@ function createStore(): DemoStore {
 
 export const DEMO_COOKIE = "circle_demo_session";
 
-const globalDemo = globalThis as unknown as { __circleDemo?: DemoStore };
+const globalDemo = globalThis as unknown as {
+  __circleDemo?: DemoStore;
+  __circleDemoVersion?: number;
+};
 
 function demoSecret(): string {
   return (
@@ -280,8 +425,9 @@ export function isDemoSession(token: string | undefined): boolean {
 }
 
 export function getDemoStore(): DemoStore {
-  if (!globalDemo.__circleDemo) {
+  if (!globalDemo.__circleDemo || globalDemo.__circleDemoVersion !== DEMO_STORE_VERSION) {
     globalDemo.__circleDemo = createStore();
+    globalDemo.__circleDemoVersion = DEMO_STORE_VERSION;
   }
   return globalDemo.__circleDemo;
 }
@@ -324,6 +470,54 @@ export function claimDemoItem(itemId: string, userId: string): ShoppingItemView 
     ).length;
   }
   return item;
+}
+
+export function addDemoShoppingItem(input: {
+  eventId: string;
+  itemName: string;
+  quantity?: string;
+}): ShoppingItemView | null {
+  const store = getDemoStore();
+  const event = store.events.find((e) => e.id === input.eventId);
+  if (!event) return null;
+  const item: ShoppingItemView = {
+    id: randomUUID(),
+    eventId: input.eventId,
+    itemName: input.itemName.trim(),
+    quantity: input.quantity?.trim() || null,
+    claimerId: null,
+    claimerName: null,
+  };
+  store.shopping.push(item);
+  event.shoppingCount = store.shopping.filter((s) => s.eventId === event.id).length;
+  return item;
+}
+
+export function setDemoRsvp(
+  eventId: string,
+  userId: string,
+  status: EventRsvpStatus
+): EventView | null {
+  const store = getDemoStore();
+  const event = store.events.find((e) => e.id === eventId);
+  if (!event) return null;
+  const member = store.members.find((m) => m.userId === userId);
+  const name = member?.name ?? "Member";
+  event.rsvps = event.rsvps.filter((r) => r.userId !== userId);
+  event.rsvps.push({ userId, name, status });
+  if (userId === store.user.id) event.myRsvp = status;
+  return event;
+}
+
+export function setDemoHost(eventId: string, hostId: string): EventView | null {
+  const store = getDemoStore();
+  const event = store.events.find((e) => e.id === eventId);
+  if (!event) return null;
+  const member = store.members.find((m) => m.userId === hostId);
+  if (!member) return null;
+  event.hostId = hostId;
+  event.hostName = member.name;
+  return event;
 }
 
 export function checkInDemo(eventId: string, userId: string): EventView | null {
