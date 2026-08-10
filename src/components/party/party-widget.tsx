@@ -42,13 +42,13 @@ export function PartyWidget({
   }
 
   return (
-    <div className="max-w-md rounded-3xl border border-white/25 bg-black/35 p-4 text-left shadow-xl backdrop-blur-xl">
-      <h2 className="font-island text-xl font-bold text-white">
+    <div className="max-w-md rounded-3xl border border-white/35 bg-black/55 p-4 text-left shadow-xl backdrop-blur-xl">
+      <h2 className="font-island text-xl font-bold text-white drop-shadow">
         {emoji} {name}
       </h2>
-      <p className="mt-2 text-sm text-white/80">⏳ {countdown}</p>
-      <p className="mt-1 text-sm text-white/80">📍 {location}</p>
-      <p className="mt-1 text-sm text-white/80">
+      <p className="mt-2 text-sm font-medium text-white/90">⏳ {countdown}</p>
+      <p className="mt-1 text-sm font-medium text-white/90">📍 {location}</p>
+      <p className="mt-1 text-sm font-medium text-white/90">
         👥 {confirmedCount} in, {maybeCount} maybe
       </p>
     </div>

@@ -203,7 +203,7 @@ export function GameRoom({
               disabled={pending}
               onClick={() => act("bet", { userId, optionIndex: 0, stake: 10 })}
             >
-              Bet Yes ($10)
+              Bet Yes (₹10)
             </Button>
             <Button
               size="sm"
@@ -211,7 +211,7 @@ export function GameRoom({
               disabled={pending}
               onClick={() => act("bet", { userId, optionIndex: 1, stake: 10 })}
             >
-              Bet No ($10)
+              Bet No (₹10)
             </Button>
             <Button size="sm" disabled={pending} onClick={() => act("settle", { resultIndex: 0 })}>
               Settle Yes

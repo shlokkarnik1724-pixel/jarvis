@@ -316,11 +316,202 @@ a {
 /* —— Party ocean / circular islands —— */
 .party-ocean {
   background:
-    radial-gradient(circle at 18% 22%, rgba(31, 111, 84, 0.55), transparent 42%),
-    radial-gradient(circle at 82% 18%, rgba(240, 194, 122, 0.28), transparent 40%),
-    radial-gradient(circle at 70% 78%, rgba(126, 184, 201, 0.28), transparent 45%),
-    linear-gradient(160deg, #0b1410 0%, #12261e 45%, #1a2f28 100%);
+    radial-gradient(circle at 18% 22%, rgba(31, 111, 84, 0.42), transparent 42%),
+    radial-gradient(circle at 82% 18%, rgba(240, 194, 122, 0.22), transparent 40%),
+    radial-gradient(circle at 70% 78%, rgba(126, 184, 201, 0.22), transparent 45%),
+    linear-gradient(165deg, #060a08 0%, #0d1a14 40%, #13241c 100%);
   animation: partyPulse 7s ease-in-out infinite;
+}
+
+/* Sweeping disco / party lights over the green stage */
+.party-lights {
+  background:
+    radial-gradient(ellipse 45% 35% at 20% 30%, rgba(255, 210, 120, 0.28), transparent 55%),
+    radial-gradient(ellipse 40% 40% at 80% 25%, rgba(120, 210, 255, 0.22), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 50% 80%, rgba(255, 120, 90, 0.18), transparent 60%),
+    radial-gradient(ellipse 30% 30% at 65% 55%, rgba(90, 255, 180, 0.12), transparent 50%);
+  mix-blend-mode: screen;
+  animation: partyLightsSweep 6.5s ease-in-out infinite;
+}
+
+.party-lights--intense {
+  opacity: 1;
+  animation-duration: 4.5s;
+}
+
+.party-lights::before,
+.party-lights::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      rgba(255, 200, 90, 0.14) 40deg,
+      transparent 80deg,
+      rgba(90, 200, 255, 0.12) 140deg,
+      transparent 180deg,
+      rgba(255, 110, 90, 0.12) 240deg,
+      transparent 280deg,
+      rgba(120, 255, 180, 0.1) 320deg,
+      transparent 360deg
+    );
+  animation: partyLightsSpin 14s linear infinite;
+  opacity: 0.85;
+}
+
+.party-lights::after {
+  animation-direction: reverse;
+  animation-duration: 18s;
+  opacity: 0.55;
+  filter: blur(18px);
+}
+
+@keyframes partyLightsSweep {
+  0%,
+  100% {
+    filter: brightness(0.95) saturate(1.05);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    filter: brightness(1.15) saturate(1.25);
+    transform: translate3d(2%, -1%, 0) scale(1.03);
+  }
+  66% {
+    filter: brightness(1.05) saturate(1.15);
+    transform: translate3d(-2%, 2%, 0) scale(1.02);
+  }
+}
+
+@keyframes partyLightsSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.feature-readable {
+  color: var(--ink);
+}
+
+.feature-readable h1,
+.feature-readable h2,
+.feature-readable h3,
+.feature-readable .font-island {
+  color: var(--ink);
+}
+
+.feature-room-lights {
+  position: absolute;
+  inset: 0;
+  border-radius: 2rem;
+  opacity: 0.55;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(240, 194, 122, 0.35), transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(126, 184, 201, 0.28), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(31, 111, 84, 0.3), transparent 50%);
+  animation: partyLightsSweep 8s ease-in-out infinite;
+}
+
+.room-vault {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(126, 184, 201, 0.45), transparent 45%),
+    radial-gradient(circle at 70% 70%, rgba(20, 40, 50, 0.5), transparent 50%);
+}
+.room-money {
+  background:
+    radial-gradient(circle at 25% 30%, rgba(61, 143, 122, 0.5), transparent 45%),
+    radial-gradient(circle at 75% 70%, rgba(212, 175, 55, 0.25), transparent 50%);
+}
+.room-bar {
+  background:
+    radial-gradient(circle at 40% 20%, rgba(240, 194, 122, 0.5), transparent 45%),
+    radial-gradient(circle at 70% 80%, rgba(163, 59, 43, 0.25), transparent 50%);
+}
+.room-flags {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(196, 92, 74, 0.5), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(240, 194, 122, 0.2), transparent 50%);
+}
+.room-games {
+  background:
+    radial-gradient(circle at 35% 20%, rgba(232, 168, 124, 0.45), transparent 45%),
+    radial-gradient(circle at 65% 75%, rgba(31, 111, 84, 0.3), transparent 50%);
+}
+.room-lock {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(126, 184, 201, 0.4), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(10, 20, 24, 0.55), transparent 55%);
+}
+.room-board {
+  background:
+    radial-gradient(circle at 50% 15%, rgba(212, 175, 55, 0.5), transparent 40%),
+    radial-gradient(circle at 40% 80%, rgba(31, 111, 84, 0.25), transparent 50%);
+}
+.room-snacks {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(240, 194, 122, 0.45), transparent 45%),
+    radial-gradient(circle at 70% 70%, rgba(196, 92, 74, 0.2), transparent 50%);
+}
+.room-gifs {
+  background:
+    radial-gradient(circle at 25% 25%, rgba(196, 163, 90, 0.4), transparent 45%),
+    radial-gradient(circle at 75% 65%, rgba(126, 184, 201, 0.25), transparent 50%);
+}
+.room-poll {
+  background:
+    radial-gradient(circle at 40% 20%, rgba(91, 216, 168, 0.45), transparent 45%),
+    radial-gradient(circle at 60% 80%, rgba(31, 111, 84, 0.3), transparent 50%);
+}
+.room-regret {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(163, 59, 43, 0.4), transparent 45%),
+    radial-gradient(circle at 70% 70%, rgba(240, 194, 122, 0.25), transparent 50%);
+}
+.room-lab {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(61, 143, 122, 0.45), transparent 45%),
+    radial-gradient(circle at 70% 75%, rgba(126, 184, 201, 0.3), transparent 50%);
+}
+
+.room-chip-vault {
+  background: linear-gradient(145deg, rgba(20, 40, 48, 0.92), rgba(70, 120, 140, 0.75));
+}
+.room-chip-money {
+  background: linear-gradient(145deg, rgba(8, 36, 28, 0.92), rgba(45, 130, 100, 0.8));
+}
+.room-chip-bar {
+  background: linear-gradient(145deg, rgba(40, 24, 10, 0.92), rgba(180, 130, 60, 0.75));
+}
+.room-chip-flags {
+  background: linear-gradient(145deg, rgba(48, 16, 14, 0.92), rgba(170, 70, 55, 0.75));
+}
+.room-chip-games {
+  background: linear-gradient(145deg, rgba(36, 22, 14, 0.92), rgba(180, 110, 70, 0.75));
+}
+.room-chip-lock {
+  background: linear-gradient(145deg, rgba(14, 28, 36, 0.92), rgba(80, 140, 160, 0.75));
+}
+.room-chip-board {
+  background: linear-gradient(145deg, rgba(36, 28, 8, 0.92), rgba(180, 150, 50, 0.8));
+}
+.room-chip-snacks {
+  background: linear-gradient(145deg, rgba(40, 26, 10, 0.92), rgba(190, 140, 60, 0.75));
+}
+.room-chip-gifs {
+  background: linear-gradient(145deg, rgba(32, 26, 12, 0.92), rgba(160, 130, 70, 0.75));
+}
+.room-chip-poll {
+  background: linear-gradient(145deg, rgba(10, 40, 32, 0.92), rgba(60, 180, 140, 0.75));
+}
+.room-chip-regret {
+  background: linear-gradient(145deg, rgba(48, 16, 12, 0.92), rgba(160, 60, 45, 0.75));
+}
+.room-chip-lab {
+  background: linear-gradient(145deg, rgba(10, 36, 28, 0.92), rgba(50, 140, 110, 0.75));
 }
 
 .party-orbs::before,
@@ -428,36 +619,12 @@ a {
   color: #f4f7f5;
 }
 
-.theme-vault main,
-.theme-bar main,
-.theme-money main,
-.theme-games main,
-.theme-flags main,
-.theme-board main,
-.theme-snacks main,
-.theme-gifs main,
-.theme-poll main,
-.theme-regret main,
-.theme-lock main,
-.theme-lab main,
-.theme-default main {
-  color: var(--ink);
+.theme-home {
+  color: #f7faf8;
 }
 
-.theme-vault main > *,
-.theme-bar main > *,
-.theme-money main > *,
-.theme-games main > *,
-.theme-flags main > *,
-.theme-board main > *,
-.theme-snacks main > *,
-.theme-gifs main > *,
-.theme-poll main > *,
-.theme-regret main > *,
-.theme-lock main > *,
-.theme-lab main > *,
-.theme-default main > * {
-  /* keep child text as designed; panels stay readable via glass cards */
+.theme-home main {
+  color: #f7faf8;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -480,6 +647,10 @@ a {
   .party-ocean,
   .party-island-float,
   .party-particles,
+  .party-lights,
+  .party-lights::before,
+  .party-lights::after,
+  .feature-room-lights,
   .party-orbs::before,
   .party-orbs::after {
     animation: none !important;

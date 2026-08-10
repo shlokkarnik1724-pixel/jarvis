@@ -1,28 +1,86 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { duration, easeOut } from "@/lib/motion";
 
 const INTRO_KEY = "circle-intro-day";
 
+/** Quirky Gen Z reaction GIFs — dance / Spidey / party chaos (not video). */
+const INTRO_GIFS = [
+  {
+    id: "spidey",
+    url: "https://media.giphy.com/media/l2SpU4cE1hiHdG7ji/giphy.gif",
+    label: "spidey point",
+  },
+  {
+    id: "dance1",
+    url: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
+    label: "spiderman dance",
+  },
+  {
+    id: "party",
+    url: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+    label: "dance floor",
+  },
+  {
+    id: "cheers",
+    url: "https://media.giphy.com/media/g9582DNuQVjV6/giphy.gif",
+    label: "cheers",
+  },
+  {
+    id: "groove",
+    url: "https://media.giphy.com/media/3oriO7A7bt1wgFzBhK/giphy.gif",
+    label: "groove",
+  },
+  {
+    id: "hype",
+    url: "https://media.giphy.com/media/l0MYwONBGDcdVu8mA/giphy.gif",
+    label: "hype",
+  },
+  {
+    id: "chaos",
+    url: "https://media.giphy.com/media/3o7aCTPPm4OHgjwD8Y/giphy.gif",
+    label: "chaos",
+  },
+  {
+    id: "shimmy",
+    url: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+    label: "shimmy",
+  },
+];
+
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function readIntroPending(): boolean {
+  try {
+    return sessionStorage.getItem(INTRO_KEY) !== todayKey();
+  } catch {
+    return true;
+  }
+}
+
+function subscribeIntro() {
+  return () => undefined;
+}
+
+function gifOrbit(index: number, total: number) {
+  const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
+  const radius = 38;
+  return {
+    left: `${50 + radius * Math.cos(angle)}%`,
+    top: `${50 + radius * Math.sin(angle) * 0.88}%`,
+    rotate: `${(index % 2 === 0 ? -1 : 1) * (8 + (index % 4) * 3)}deg`,
+  };
+}
+
 export function PartyIntro() {
   const reduced = useReducedMotion();
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    try {
-      const seen = sessionStorage.getItem(INTRO_KEY);
-      if (seen === todayKey()) return;
-      setShow(true);
-    } catch {
-      setShow(true);
-    }
-  }, []);
+  const pending = useSyncExternalStore(subscribeIntro, readIntroPending, () => false);
+  const [dismissed, setDismissed] = useState(false);
+  const show = pending && !dismissed;
 
   function dismiss() {
     try {
@@ -30,7 +88,7 @@ export function PartyIntro() {
     } catch {
       // ignore
     }
-    setShow(false);
+    setDismissed(true);
   }
 
   return (
@@ -40,16 +98,53 @@ export function PartyIntro() {
           type="button"
           aria-label="Enter Circle"
           onClick={dismiss}
-          className="fixed inset-0 z-[200] flex cursor-pointer flex-col items-center justify-center overflow-hidden bg-[#0c1612] text-center"
+          className="fixed inset-0 z-[200] flex cursor-pointer flex-col items-center justify-center overflow-hidden bg-[#070c0a] text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: duration.base } }}
         >
+          <div className="party-lights party-lights--intense pointer-events-none absolute inset-0" />
           <div className="party-particles pointer-events-none absolute inset-0" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(31,111,84,0.45),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(240,194,122,0.25),transparent_45%)]" />
+
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {INTRO_GIFS.map((gif, i) => {
+              const pos = gifOrbit(i, INTRO_GIFS.length);
+              return (
+                <motion.img
+                  key={gif.id}
+                  src={gif.url}
+                  alt={gif.label}
+                  className="absolute h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-2xl object-cover shadow-[0_12px_40px_rgba(0,0,0,0.65)] ring-2 ring-white/35 md:h-32 md:w-32"
+                  style={{
+                    left: pos.left,
+                    top: pos.top,
+                    rotate: pos.rotate,
+                  }}
+                  initial={reduced ? false : { opacity: 0, scale: 0.75 }}
+                  animate={
+                    reduced
+                      ? { opacity: 0.75 }
+                      : {
+                          opacity: [0.55, 0.95, 0.55],
+                          y: [0, -14, 0],
+                          scale: [0.94, 1.06, 0.94],
+                        }
+                  }
+                  transition={{
+                    duration: 2.8 + i * 0.18,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.1,
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/75" />
 
           <motion.p
-            className="relative font-island text-3xl font-extrabold tracking-tight text-white md:text-5xl lg:text-6xl"
+            className="relative max-w-[92vw] font-island text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] md:text-5xl lg:text-6xl"
             initial={reduced ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: easeOut, delay: 0.15 }}
@@ -57,7 +152,7 @@ export function PartyIntro() {
             🍾 WHAT ARE WE DRINKING TONIGHT?
           </motion.p>
           <motion.p
-            className="relative mt-6 text-sm text-white/70 md:text-base"
+            className="relative mt-6 text-sm font-medium text-white drop-shadow md:text-base"
             initial={reduced ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
