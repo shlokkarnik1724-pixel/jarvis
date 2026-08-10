@@ -1,13 +1,7 @@
-import { IslandsDashboard } from "@/components/islands/islands-dashboard";
+import { PartyIslandsHome } from "@/components/islands/party-islands-home";
 import { DEMO_MODE } from "@/lib/config";
-import {
-  listEvents,
-  listMembers,
-} from "@/lib/data/circle-queries";
-import {
-  getDemoEvents,
-  getDemoMembers,
-} from "@/lib/demo/store";
+import { listEvents, listMembers } from "@/lib/data/circle-queries";
+import { getDemoEvents, getDemoMembers } from "@/lib/demo/store";
 import { getLabHubSummary, syncLabContext } from "@/lib/lab/store";
 import { getSessionContext, requireCircleId } from "@/lib/session";
 
@@ -36,16 +30,19 @@ export default async function DashboardPage() {
   )[0];
 
   const summary = getLabHubSummary(circleId, session.user.id);
+  const members =
+    DEMO_MODE || session.demo ? getDemoMembers() : await listMembers(circleId);
 
   return (
-    <IslandsDashboard
+    <PartyIslandsHome
       userName={session.membership?.nickname || session.user.name}
       circleName={session.circle?.name ?? "Your Circle"}
       inviteCode={session.circle?.inviteCode ?? null}
-      upcomingTitle={upcoming?.title ?? null}
-      upcomingDate={upcoming?.date ?? null}
-      vibeCount={summary.vibeCount}
-      openPolls={summary.openPolls}
+      eventName={upcoming?.title ?? null}
+      eventLocation={upcoming?.location ?? null}
+      eventDate={upcoming?.date ?? null}
+      confirmedCount={upcoming?.checkinCount ?? members.length}
+      maybeCount={Math.max(0, members.length - (upcoming?.checkinCount ?? 0))}
       myTitle={summary.myTitle}
     />
   );

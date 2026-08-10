@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { IslandCard, ConfettiBurst } from "@/components/islands/island-card";
 import { toast } from "@/lib/store/toast-store";
-import { settleDebts } from "@/lib/utils/settlements";
+import { settleDebts, computeBalances } from "@/lib/utils/settlements";
 import { formatCurrency } from "@/lib/utils";
+import { getBrokeTitle } from "@/lib/party/systems";
 import type { TabEntryView } from "@/lib/types";
 
 function DebtWeb({
@@ -108,6 +109,23 @@ export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
     [tabs]
   );
 
+  const brokeBoard = useMemo(
+    () =>
+      computeBalances(
+        tabs.map((tab) => ({
+          payerId: tab.payerId,
+          payerName: tab.payerName,
+          amount: tab.amount,
+        }))
+      )
+        .map((row) => ({
+          ...row,
+          title: getBrokeTitle(row.net),
+        }))
+        .sort((a, b) => b.net - a.net),
+    [tabs]
+  );
+
   function addTab() {
     startTransition(async () => {
       const response = await fetch("/api/tabs", {
@@ -136,11 +154,31 @@ export function TabTracker({ initialTabs }: { initialTabs: TabEntryView[] }) {
     <div className="space-y-8">
       <ConfettiBurst show={burst} />
       <FadeIn>
-        <IslandCard emoji="🧾" title="Splitzy" accent="rgba(126, 184, 201, 0.4)">
+        <IslandCard emoji="💸" title="Who's Broke" accent="rgba(126, 184, 201, 0.4)">
           <p className="text-sm text-[var(--ink-muted)]">
-            Log shared expenses, simplify to the fewest transfers, and watch the Debt Web.
+            Top G at the top. Certified Broke Menace at the bottom. Debt Web below.
           </p>
         </IslandCard>
+      </FadeIn>
+
+      <FadeIn delay={0.03}>
+        <section className="rounded-[1.5rem] border border-white/40 bg-white/70 p-5">
+          <h2 className="mb-3 font-island text-lg font-bold">🥂 Broke vs Top G</h2>
+          <ul className="space-y-2">
+            {brokeBoard.map((row, index) => (
+              <li
+                key={row.userId}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl px-2 py-2 text-sm"
+              >
+                <span>
+                  {index === 0 ? "👑 " : ""}
+                  {row.name} · {row.title}
+                </span>
+                <span className="font-semibold">{formatCurrency(row.net)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </FadeIn>
 
       <FadeIn delay={0.05}>

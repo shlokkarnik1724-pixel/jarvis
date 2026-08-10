@@ -313,6 +313,153 @@ a {
   transition: border-color var(--duration-fast) var(--ease-out);
 }
 
+/* —— Party ocean / circular islands —— */
+.party-ocean {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(31, 111, 84, 0.55), transparent 42%),
+    radial-gradient(circle at 82% 18%, rgba(240, 194, 122, 0.28), transparent 40%),
+    radial-gradient(circle at 70% 78%, rgba(126, 184, 201, 0.28), transparent 45%),
+    linear-gradient(160deg, #0b1410 0%, #12261e 45%, #1a2f28 100%);
+  animation: partyPulse 7s ease-in-out infinite;
+}
+
+.party-orbs::before,
+.party-orbs::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(40px);
+  opacity: 0.45;
+}
+
+.party-orbs::before {
+  width: 280px;
+  height: 280px;
+  top: 12%;
+  left: 8%;
+  background: rgba(61, 143, 122, 0.55);
+  animation: drift 16s ease-in-out infinite;
+}
+
+.party-orbs::after {
+  width: 320px;
+  height: 320px;
+  right: 6%;
+  bottom: 10%;
+  background: rgba(240, 194, 122, 0.35);
+  animation: drift-delayed 18s ease-in-out infinite;
+}
+
+.party-particles {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    radial-gradient(circle, rgba(240, 194, 122, 0.4) 1.5px, transparent 1.5px);
+  background-size: 48px 48px, 72px 72px;
+  background-position: 0 0, 24px 18px;
+  opacity: 0.35;
+  animation: particleDrift 20s linear infinite;
+}
+
+@keyframes partyPulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.12);
+  }
+}
+
+@keyframes particleDrift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-48px);
+  }
+}
+
+@keyframes partyIslandFloat {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-14px) rotate(1deg);
+  }
+}
+
+.party-island-float {
+  animation: partyIslandFloat 4.5s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.4s);
+}
+
+.theme-vault .party-ocean {
+  background: linear-gradient(160deg, #0d1518 0%, #1a2a30 50%, #243840 100%);
+}
+.theme-bar .party-ocean {
+  background: linear-gradient(160deg, #1a1208 0%, #2a1c0e 45%, #3d2814 100%);
+}
+.theme-money .party-ocean {
+  background: linear-gradient(160deg, #07140f 0%, #0f2a1c 50%, #145240 100%);
+}
+.theme-games .party-ocean {
+  background: linear-gradient(160deg, #120e0a 0%, #2a1a12 50%, #3d2418 100%);
+}
+.theme-flags .party-ocean {
+  background: linear-gradient(160deg, #180c0c 0%, #2a1414 50%, #3d1c1c 100%);
+}
+
+/* Feature pages on party shell need light readable panels */
+.theme-vault,
+.theme-bar,
+.theme-money,
+.theme-games,
+.theme-flags,
+.theme-board,
+.theme-snacks,
+.theme-gifs,
+.theme-poll,
+.theme-regret,
+.theme-lock,
+.theme-lab,
+.theme-default,
+.theme-home {
+  color: #f4f7f5;
+}
+
+.theme-vault main,
+.theme-bar main,
+.theme-money main,
+.theme-games main,
+.theme-flags main,
+.theme-board main,
+.theme-snacks main,
+.theme-gifs main,
+.theme-poll main,
+.theme-regret main,
+.theme-lock main,
+.theme-lab main,
+.theme-default main {
+  color: var(--ink);
+}
+
+.theme-vault main > *,
+.theme-bar main > *,
+.theme-money main > *,
+.theme-games main > *,
+.theme-flags main > *,
+.theme-board main > *,
+.theme-snacks main > *,
+.theme-gifs main > *,
+.theme-poll main > *,
+.theme-regret main > *,
+.theme-lock main > *,
+.theme-lab main > *,
+.theme-default main > * {
+  /* keep child text as designed; panels stay readable via glass cards */
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -329,7 +476,12 @@ a {
   .skeleton-shimmer,
   .ocean-bg,
   .ocean-blob,
-  .island-pulse {
+  .island-pulse,
+  .party-ocean,
+  .party-island-float,
+  .party-particles,
+  .party-orbs::before,
+  .party-orbs::after {
     animation: none !important;
   }
 
