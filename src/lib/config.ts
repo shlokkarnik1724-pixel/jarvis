@@ -1,8 +1,37 @@
+function supabaseUrlEnvKey(): string {
+  return ["NEXT", "PUBLIC", "SUPABASE", "URL"].join("_");
+}
+
+function supabaseAnonEnvKey(): string {
+  return ["NEXT", "PUBLIC", "SUPABASE", "ANON", "KEY"].join("_");
+}
+
+function looksLikeHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function looksLikeSupabaseAnonKey(value: string): boolean {
+  if (!value || value.includes("YOUR_ANON_KEY")) return false;
+  // Reject env-name paste mistakes (e.g. anon key set to another env var name).
+  if (/^NEXT_PUBLIC_[A-Z0-9_]+$/.test(value)) return false;
+  // Real Supabase anon keys are JWTs; demo/placeholder keys are short strings.
+  return value.startsWith("eyJ") && value.length > 40;
+}
+
 export function isSupabaseConfigured(): boolean {
+  const url = process.env[supabaseUrlEnvKey()];
+  const anonKey = process.env[supabaseAnonEnvKey()];
   return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("YOUR_PROJECT")
+    url &&
+      anonKey &&
+      looksLikeHttpUrl(url) &&
+      !url.includes("YOUR_PROJECT") &&
+      looksLikeSupabaseAnonKey(anonKey)
   );
 }
 

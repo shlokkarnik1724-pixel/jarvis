@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { isSupabaseConfigured } from "@/lib/config";
 import { updateSession } from "@/lib/supabase/middleware";
 import { DEMO_COOKIE, isDemoSession } from "@/lib/demo/store";
 
@@ -21,12 +22,8 @@ function needsAuth(pathname: string): boolean {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const supabaseConfigured =
-    Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-    Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
-    !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("YOUR_PROJECT");
 
-  if (supabaseConfigured) {
+  if (isSupabaseConfigured()) {
     const { supabaseResponse, user } = await updateSession(request);
 
     if (needsAuth(pathname) && !user) {
