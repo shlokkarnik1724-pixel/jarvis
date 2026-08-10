@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarDays,
+  FlaskConical,
   Gamepad2,
   GlassWater,
   LayoutDashboard,
@@ -28,6 +29,7 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/vault", label: "Photo Vault", icon: Vault },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/fun", label: "Circle Lab", icon: FlaskConical },
   { href: "/fun/vibe", label: "Vibe Gen", icon: Sparkles },
   { href: "/fun/drinks", label: "Drinks Bar", icon: GlassWater },
   { href: "/fun/roast-toast", label: "Roast & Toast", icon: MessageSquareQuote },
@@ -89,7 +91,9 @@ export function CircleShell({
             <nav className="flex flex-1 flex-col gap-1">
               {NAV.map((item) => {
                 const active =
-                  pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  item.href === "/fun"
+                    ? pathname === "/fun"
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
                 const Icon = item.icon;
                 return (
                   <Link

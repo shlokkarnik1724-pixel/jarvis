@@ -1,17 +1,44 @@
 import { DEMO_MODE } from "@/lib/config";
-import { listLeaderboard } from "@/lib/data/circle-queries";
-import { getDemoLeaderboard } from "@/lib/demo/store";
+import { listEvents, listLeaderboard, listMembers } from "@/lib/data/circle-queries";
+import {
+  getDemoEvents,
+  getDemoLeaderboard,
+  getDemoMembers,
+} from "@/lib/demo/store";
 import { getSessionContext, requireCircleId } from "@/lib/session";
 import { Badge } from "@/components/ui/badge";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { titleForPoints } from "@/lib/lab/logic";
+import { getCurrencySnapshot, syncLabContext } from "@/lib/lab/store";
 
 export default async function LeaderboardPage() {
   const session = await getSessionContext();
   if (!session) return null;
-  const rows =
+  const circleId = requireCircleId(session);
+
+  if (DEMO_MODE || session.demo) {
+    syncLabContext(circleId, getDemoMembers(), getDemoEvents());
+  } else {
+    const [members, events] = await Promise.all([
+      listMembers(circleId),
+      listEvents(circleId, session.user.id),
+    ]);
+    syncLabContext(circleId, members, events);
+  }
+
+  const currency = getCurrencySnapshot(circleId);
+  const legacyRows =
     DEMO_MODE || session.demo
       ? getDemoLeaderboard()
-      : await listLeaderboard(requireCircleId(session));
+      : await listLeaderboard(circleId);
+
+  const rows =
+    currency.rows.length > 0
+      ? currency.rows
+      : legacyRows.map((row) => ({
+          ...row,
+          title: titleForPoints(row.totalPoints),
+        }));
 
   return (
     <div className="space-y-6">
@@ -19,7 +46,7 @@ export default async function LeaderboardPage() {
         <div>
           <h1 className="font-display text-3xl">Leaderboard</h1>
           <p className="mt-2 text-[var(--ink-muted)]">
-            Ranked by game wins, event attendance, and custom circle points.
+            Ranked by Circle Currency — games, attendance, vibes, polls, bingo, and more.
           </p>
         </div>
       </Reveal>
@@ -34,7 +61,9 @@ export default async function LeaderboardPage() {
                 </span>
                 <div>
                   <p className="text-lg font-medium">{row.nickname || row.name}</p>
-                  <p className="text-sm text-[var(--ink-muted)]">{row.name}</p>
+                  <p className="text-sm text-[var(--ink-muted)]">
+                    {row.title ?? titleForPoints(row.totalPoints)} · {row.name}
+                  </p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">

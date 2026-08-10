@@ -6,6 +6,12 @@ import {
   startMafia,
   joinMafia,
 } from "../src/lib/games/state-machine.ts";
+import {
+  checkBingo,
+  generateRecoveryTasks,
+  severityFromDrinks,
+  titleForPoints,
+} from "../src/lib/lab/logic.ts";
 
 function testSettlements() {
   const transfers = settleDebts([
@@ -49,6 +55,25 @@ function testMafia() {
   console.log("mafia state machine: ok");
 }
 
+function testLabLogic() {
+  const marked = Array.from({ length: 25 }, () => false);
+  marked[0] = marked[1] = marked[2] = marked[3] = marked[4] = true;
+  assert.equal(checkBingo(marked), true);
+
+  const empty = Array.from({ length: 25 }, () => false);
+  assert.equal(checkBingo(empty), false);
+
+  assert.equal(severityFromDrinks(2), "light");
+  assert.equal(severityFromDrinks(5), "medium");
+  assert.equal(severityFromDrinks(9), "heavy");
+
+  const heavyTasks = generateRecoveryTasks("heavy");
+  assert.ok(heavyTasks.some((t) => t.text.includes("alive")));
+  assert.equal(titleForPoints(85), "Chaos Coordinator");
+  console.log("lab logic: ok");
+}
+
 testSettlements();
 testMafia();
+testLabLogic();
 console.log("all unit checks passed");
