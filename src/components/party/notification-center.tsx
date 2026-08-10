@@ -14,7 +14,11 @@ export type CircleNotice = {
 
 const KEY = "circle-notices";
 const PERM_ASKED = "circle-notif-asked";
+const EMPTY_NOTICES: CircleNotice[] = [];
 const listeners = new Set<() => void>();
+
+let cachedRaw: string | null = null;
+let cachedNotices: CircleNotice[] = EMPTY_NOTICES;
 
 function emit() {
   listeners.forEach((l) => l());
@@ -30,18 +34,32 @@ function subscribe(cb: () => void) {
 function readNotices(): CircleNotice[] {
   try {
     const raw = sessionStorage.getItem(KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as CircleNotice[];
+    if (!raw) {
+      cachedRaw = null;
+      cachedNotices = EMPTY_NOTICES;
+      return EMPTY_NOTICES;
+    }
+    if (raw === cachedRaw) return cachedNotices;
+    cachedRaw = raw;
+    cachedNotices = JSON.parse(raw) as CircleNotice[];
+    return cachedNotices;
   } catch {
-    return [];
+    cachedRaw = null;
+    cachedNotices = EMPTY_NOTICES;
+    return EMPTY_NOTICES;
   }
 }
 
 function writeNotices(rows: CircleNotice[]) {
+  const next = rows.slice(0, 20);
   try {
-    sessionStorage.setItem(KEY, JSON.stringify(rows.slice(0, 20)));
+    const raw = JSON.stringify(next);
+    sessionStorage.setItem(KEY, raw);
+    cachedRaw = raw;
+    cachedNotices = next;
   } catch {
-    // ignore
+    cachedRaw = null;
+    cachedNotices = next;
   }
   emit();
 }
@@ -78,7 +96,7 @@ function readPerm(): NotificationPermission | "unsupported" {
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false);
-  const rows = useSyncExternalStore(subscribe, readNotices, () => []);
+  const rows = useSyncExternalStore(subscribe, readNotices, () => EMPTY_NOTICES);
   const [perm, setPerm] = useState<NotificationPermission | "unsupported">(() =>
     typeof window === "undefined" ? "default" : readPerm()
   );

@@ -10,14 +10,14 @@ const INTRO_KEY = "circle-intro-day";
 /** Quirky Gen Z reaction GIFs — dance / Spidey / party chaos (not video). */
 const INTRO_GIFS = [
   {
-    id: "spidey",
-    url: "https://media.giphy.com/media/l2SpU4cE1hiHdG7ji/giphy.gif",
-    label: "spidey point",
-  },
-  {
     id: "dance1",
     url: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
     label: "spiderman dance",
+  },
+  {
+    id: "swing",
+    url: "https://media.giphy.com/media/xT9DPIBYf0pAviBLzO/giphy.gif",
+    label: "web swing",
   },
   {
     id: "party",
@@ -25,24 +25,24 @@ const INTRO_GIFS = [
     label: "dance floor",
   },
   {
-    id: "cheers",
-    url: "https://media.giphy.com/media/g9582DNuQVjV6/giphy.gif",
-    label: "cheers",
+    id: "mask",
+    url: "https://media.giphy.com/media/26BRuo6sLetdllPAQ/giphy.gif",
+    label: "mask on",
   },
   {
-    id: "groove",
-    url: "https://media.giphy.com/media/3oriO7A7bt1wgFzBhK/giphy.gif",
-    label: "groove",
+    id: "cat",
+    url: "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif",
+    label: "party cat",
   },
   {
-    id: "hype",
-    url: "https://media.giphy.com/media/l0MYwONBGDcdVu8mA/giphy.gif",
-    label: "hype",
+    id: "excited",
+    url: "https://media.giphy.com/media/14uQ3cOFteDaU/giphy.gif",
+    label: "excited",
   },
   {
-    id: "chaos",
-    url: "https://media.giphy.com/media/3o7aCTPPm4OHgjwD8Y/giphy.gif",
-    label: "chaos",
+    id: "thwip",
+    url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
+    label: "thwip",
   },
   {
     id: "shimmy",
@@ -63,8 +63,22 @@ function readIntroPending(): boolean {
   }
 }
 
-function subscribeIntro() {
-  return () => undefined;
+const introListeners = new Set<() => void>();
+
+function subscribeIntro(cb: () => void) {
+  introListeners.add(cb);
+  return () => {
+    introListeners.delete(cb);
+  };
+}
+
+function markIntroSeen() {
+  try {
+    sessionStorage.setItem(INTRO_KEY, todayKey());
+  } catch {
+    // ignore
+  }
+  introListeners.forEach((l) => l());
 }
 
 function gifOrbit(index: number, total: number) {
@@ -84,11 +98,7 @@ export function PartyIntro() {
   const show = pending && !dismissed;
 
   function dismiss() {
-    try {
-      sessionStorage.setItem(INTRO_KEY, todayKey());
-    } catch {
-      // ignore
-    }
+    markIntroSeen();
     playSound("cheers");
     setDismissed(true);
   }
@@ -116,11 +126,11 @@ export function PartyIntro() {
                   key={gif.id}
                   src={gif.url}
                   alt={gif.label}
-                  className="absolute h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-2xl object-cover shadow-[0_12px_40px_rgba(0,0,0,0.65)] ring-2 ring-white/35 md:h-32 md:w-32"
+                  className="absolute h-24 w-24 rounded-2xl object-cover shadow-[0_12px_40px_rgba(0,0,0,0.65)] ring-2 ring-white/35 md:h-32 md:w-32"
                   style={{
                     left: pos.left,
                     top: pos.top,
-                    rotate: pos.rotate,
+                    transform: `translate(-50%, -50%) rotate(${pos.rotate})`,
                   }}
                   initial={reduced ? false : { opacity: 0, scale: 0.75 }}
                   animate={

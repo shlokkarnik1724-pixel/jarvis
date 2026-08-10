@@ -6,11 +6,6 @@ import { cn } from "@/lib/utils";
 /** Spidey-forward Gen Z reaction pack (Giphy CDN). */
 export const SPIDEY_GIFS = [
   {
-    id: "point",
-    url: "https://media.giphy.com/media/l2SpU4cE1hiHdG7ji/giphy.gif",
-    label: "spidey point",
-  },
-  {
     id: "dance",
     url: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
     label: "spidey dance",
@@ -36,14 +31,19 @@ export const SPIDEY_GIFS = [
     label: "party crawl",
   },
   {
-    id: "hype",
-    url: "https://media.giphy.com/media/l0MYwONBGDcdVu8mA/giphy.gif",
-    label: "crowd hype",
+    id: "cat",
+    url: "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif",
+    label: "party cat",
   },
   {
-    id: "cheers",
-    url: "https://media.giphy.com/media/g9582DNuQVjV6/giphy.gif",
-    label: "cheers",
+    id: "shimmy",
+    url: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+    label: "shimmy",
+  },
+  {
+    id: "excited",
+    url: "https://media.giphy.com/media/14uQ3cOFteDaU/giphy.gif",
+    label: "excited",
   },
 ];
 

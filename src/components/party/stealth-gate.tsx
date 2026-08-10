@@ -1,10 +1,13 @@
 "use client";
 
-import { FormEvent, useState, useSyncExternalStore } from "react";
+import { FormEvent, useRef, useState, useSyncExternalStore } from "react";
 import { playSound } from "@/lib/sound/sfx";
 
 const UNLOCK_KEY = "circle-son-unlock";
+const UNLOCK_EVENT = "circle-son-unlock-changed";
 const UNLOCK_HOURS = 24;
+
+const unlockListeners = new Set<() => void>();
 
 function readUnlocked(): boolean {
   try {
@@ -18,8 +21,19 @@ function readUnlocked(): boolean {
   }
 }
 
-function subscribe() {
-  return () => undefined;
+function subscribe(cb: () => void) {
+  unlockListeners.add(cb);
+  if (typeof window !== "undefined") {
+    window.addEventListener(UNLOCK_EVENT, cb);
+    window.addEventListener("storage", cb);
+  }
+  return () => {
+    unlockListeners.delete(cb);
+    if (typeof window !== "undefined") {
+      window.removeEventListener(UNLOCK_EVENT, cb);
+      window.removeEventListener("storage", cb);
+    }
+  };
 }
 
 function persistUnlock() {
@@ -27,6 +41,10 @@ function persistUnlock() {
     sessionStorage.setItem(UNLOCK_KEY, String(Date.now()));
   } catch {
     // ignore
+  }
+  unlockListeners.forEach((l) => l());
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(UNLOCK_EVENT));
   }
 }
 
@@ -43,7 +61,7 @@ export function StealthGate({ children }: { children: React.ReactNode }) {
   const [pin, setPin] = useState("");
   const [fails, setFails] = useState(0);
   const [hardError, setHardError] = useState(false);
-  const [taps, setTaps] = useState(0);
+  const tapsRef = useRef(0);
 
   const open = storedOpen || manualOpen;
 
@@ -64,9 +82,8 @@ export function StealthGate({ children }: { children: React.ReactNode }) {
   }
 
   function onLogoTap() {
-    const next = taps + 1;
-    setTaps(next);
-    if (next >= 5) {
+    tapsRef.current += 1;
+    if (tapsRef.current >= 5) {
       setShowCalc(true);
       playSound("tap");
     }
