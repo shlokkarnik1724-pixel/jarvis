@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Camera, Gamepad2, ListChecks, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { DEMO_MODE } from "@/lib/config";
 import {
   getDemoEvents,
@@ -53,43 +54,49 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-10">
-      <section className="relative overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(135deg,rgba(31,111,84,0.12),rgba(217,228,239,0.55)_45%,rgba(251,252,249,0.9))] px-6 py-8 md:px-10 md:py-12">
-        <div className="relative max-w-2xl">
-          <p className="font-display text-4xl tracking-tight md:text-5xl">Circle</p>
-          <p className="mt-3 text-lg text-[var(--ink-muted)]">
-            Welcome back, {session.membership?.nickname || session.user.name}.
-            {session.circle ? ` You're in ${session.circle.name}.` : null}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button asChild>
-              <Link href="/vault">
-                Open Vault <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="secondary">
-              <Link href="/games">Launch a game</Link>
-            </Button>
-            {session.circle?.inviteCode ? (
-              <Button asChild variant="ghost">
-                <Link href="/settings">Invite: {session.circle.inviteCode}</Link>
+      <Reveal>
+        <section className="relative overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(135deg,rgba(31,111,84,0.14),rgba(217,228,239,0.55)_45%,rgba(251,252,249,0.88))] px-6 py-8 shadow-[0_24px_50px_-36px_rgba(20,32,27,0.35)] backdrop-blur-sm md:px-10 md:py-12">
+          <div className="pointer-events-none absolute -right-10 top-0 h-48 w-48 rounded-full bg-[radial-gradient(circle_at_center,rgba(31,111,84,0.18),transparent_70%)] blur-2xl" />
+          <div className="relative max-w-2xl">
+            <p className="font-display text-4xl tracking-tight md:text-5xl">Circle</p>
+            <p className="mt-3 text-lg text-[var(--ink-muted)]">
+              Welcome back, {session.membership?.nickname || session.user.name}.
+              {session.circle ? ` You're in ${session.circle.name}.` : null}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/vault">
+                  Open Vault <ArrowRight className="h-4 w-4" />
+                </Link>
               </Button>
-            ) : null}
+              <Button asChild variant="secondary">
+                <Link href="/games">Launch a game</Link>
+              </Button>
+              {session.circle?.inviteCode ? (
+                <Button asChild variant="ghost">
+                  <Link href="/settings">Invite: {session.circle.inviteCode}</Link>
+                </Button>
+              ) : null}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </Reveal>
 
       <section className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-4">
+        <Reveal className="lg:col-span-2 space-y-4" delay={0.05}>
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl">Upcoming event</h2>
-            <Link href="/events" className="text-sm text-[var(--accent-deep)]">
+            <Link
+              href="/events"
+              className="text-sm text-[var(--accent-deep)] transition hover:text-[var(--accent)]"
+            >
               View all
             </Link>
           </div>
           {upcoming ? (
             <Link
               href={`/events/${upcoming.id}`}
-              className="block border-b border-[var(--line)] pb-5 transition hover:opacity-90"
+              className="interactive-glow block rounded-2xl border border-transparent border-b-[var(--line)] pb-5 transition hover:border-[var(--line)] hover:bg-[var(--bg-elevated)]/70 hover:px-4 hover:py-4 hover:backdrop-blur-sm"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -99,7 +106,7 @@ export default async function DashboardPage() {
                     {upcoming.location ? ` · ${upcoming.location}` : ""}
                   </p>
                 </div>
-                <Badge>{upcoming.checkinCount} checked in</Badge>
+                <Badge pulse>{upcoming.checkinCount} checked in</Badge>
               </div>
             </Link>
           ) : (
@@ -120,43 +127,44 @@ export default async function DashboardPage() {
             {shopping.length === 0 ? (
               <p className="text-sm text-[var(--ink-muted)]">Nothing on the list.</p>
             ) : (
-              <ul className="space-y-2">
+              <Stagger className="space-y-2">
                 {shopping.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center justify-between border-b border-[var(--line)] py-2 text-sm"
-                  >
-                    <span>
-                      {item.itemName}
-                      {item.quantity ? ` × ${item.quantity}` : ""}
-                    </span>
-                    <span className="text-[var(--ink-muted)]">
-                      {item.claimerName ?? "Unclaimed"}
-                    </span>
-                  </li>
+                  <StaggerItem key={item.id}>
+                    <div className="flex items-center justify-between border-b border-[var(--line)] py-2 text-sm transition hover:border-[var(--accent)]/40">
+                      <span>
+                        {item.itemName}
+                        {item.quantity ? ` × ${item.quantity}` : ""}
+                      </span>
+                      <span className="text-[var(--ink-muted)]">
+                        {item.claimerName ?? "Unclaimed"}
+                      </span>
+                    </div>
+                  </StaggerItem>
                 ))}
-              </ul>
+              </Stagger>
             )}
           </div>
-        </div>
+        </Reveal>
 
-        <div className="space-y-8">
+        <Reveal className="space-y-8" delay={0.1}>
           <div>
             <div className="mb-3 flex items-center gap-2">
               <Trophy className="h-4 w-4 text-[var(--accent)]" />
               <h3 className="font-medium">Leaderboard snapshot</h3>
             </div>
-            <ol className="space-y-3">
+            <Stagger className="space-y-3">
               {leaderboard.map((row, index) => (
-                <li key={row.userId} className="flex items-center justify-between text-sm">
-                  <span>
-                    <span className="mr-2 text-[var(--ink-muted)]">{index + 1}.</span>
-                    {row.nickname || row.name}
-                  </span>
-                  <span className="font-medium">{row.totalPoints} pts</span>
-                </li>
+                <StaggerItem key={row.userId}>
+                  <div className="flex items-center justify-between rounded-xl px-2 py-1.5 text-sm transition hover:bg-[var(--accent-soft)]/50">
+                    <span>
+                      <span className="mr-2 text-[var(--ink-muted)]">{index + 1}.</span>
+                      {row.nickname || row.name}
+                    </span>
+                    <span className="font-medium">{row.totalPoints} pts</span>
+                  </div>
+                </StaggerItem>
               ))}
-            </ol>
+            </Stagger>
           </div>
 
           <div>
@@ -167,21 +175,23 @@ export default async function DashboardPage() {
             {games.length === 0 ? (
               <p className="text-sm text-[var(--ink-muted)]">No lobbies open.</p>
             ) : (
-              <ul className="space-y-2 text-sm">
+              <Stagger className="space-y-2 text-sm">
                 {games.slice(0, 4).map((game) => (
-                  <li key={game.id}>
+                  <StaggerItem key={game.id}>
                     <Link
                       href={`/games/${game.gameType}?id=${game.id}`}
-                      className="flex items-center justify-between border-b border-[var(--line)] py-2 hover:text-[var(--accent-deep)]"
+                      className="interactive-glow flex items-center justify-between rounded-xl border border-transparent border-b-[var(--line)] py-2 hover:border-[var(--line)] hover:bg-[var(--bg-elevated)]/80 hover:px-3 hover:text-[var(--accent-deep)]"
                     >
                       <span className="capitalize">
                         {game.gameType.replaceAll("_", " ")}
                       </span>
-                      <Badge>{game.status}</Badge>
+                      <Badge pulse={game.status === "active" || game.status === "lobby"}>
+                        {game.status}
+                      </Badge>
                     </Link>
-                  </li>
+                  </StaggerItem>
                 ))}
-              </ul>
+              </Stagger>
             )}
           </div>
 
@@ -189,7 +199,7 @@ export default async function DashboardPage() {
             <Camera className="h-4 w-4" />
             Vault streams are canvas-only — no direct image URLs.
           </div>
-        </div>
+        </Reveal>
       </section>
     </div>
   );

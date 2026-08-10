@@ -15,9 +15,13 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { PageTransition } from "@/components/motion/page-transition";
+import { StatusPulse } from "@/components/ui/skeleton";
+import { duration, easeOut } from "@/lib/motion";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -45,6 +49,7 @@ export function CircleShell({
 }: CircleShellProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const reduced = useReducedMotion();
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
@@ -57,7 +62,7 @@ export function CircleShell({
       <div className="mx-auto flex min-h-screen max-w-7xl">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 w-72 border-r border-[var(--line)] bg-[var(--bg-elevated)]/95 backdrop-blur-md transition-transform duration-300 lg:static lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-40 w-72 border-r border-[var(--line)] glass-nav transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:static lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full"
           )}
         >
@@ -71,7 +76,7 @@ export function CircleShell({
               </div>
               <button
                 type="button"
-                className="lg:hidden"
+                className="rounded-lg p-1.5 transition hover:bg-[var(--accent-soft)] active:scale-95 lg:hidden"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
               >
@@ -90,13 +95,25 @@ export function CircleShell({
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                      "group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]",
                       active
-                        ? "bg-[var(--accent-soft)] text-[var(--accent-deep)]"
-                        : "text-[var(--ink-muted)] hover:bg-[var(--bg)] hover:text-[var(--ink)]"
+                        ? "bg-[var(--accent-soft)] text-[var(--accent-deep)] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]"
+                        : "text-[var(--ink-muted)] hover:bg-[var(--bg)]/80 hover:text-[var(--ink)] hover:backdrop-blur-sm"
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    {active ? (
+                      <motion.span
+                        layoutId={reduced ? undefined : "nav-active"}
+                        className="absolute inset-y-1 left-0 w-1 rounded-full bg-[var(--accent)]"
+                        transition={{ duration: duration.fast, ease: easeOut }}
+                      />
+                    ) : null}
+                    <Icon
+                      className={cn(
+                        "h-4 w-4 transition-transform duration-200 group-hover:scale-110",
+                        active && "text-[var(--accent)]"
+                      )}
+                    />
                     {item.label}
                   </Link>
                 );
@@ -104,7 +121,10 @@ export function CircleShell({
             </nav>
 
             <div className="mt-6 border-t border-[var(--line)] pt-4 text-sm">
-              <p className="font-medium">{userName}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium">{userName}</p>
+                {demo ? <StatusPulse tone="accent" /> : null}
+              </div>
               {demo ? (
                 <p className="mt-1 text-[var(--ink-muted)]">Demo session</p>
               ) : null}
@@ -117,21 +137,27 @@ export function CircleShell({
           </div>
         </aside>
 
-        {open ? (
-          <button
-            type="button"
-            className="fixed inset-0 z-30 bg-black/30 lg:hidden"
-            aria-label="Close overlay"
-            onClick={() => setOpen(false)}
-          />
-        ) : null}
+        <AnimatePresence>
+          {open ? (
+            <motion.button
+              type="button"
+              className="fixed inset-0 z-30 bg-black/30 backdrop-blur-[2px] lg:hidden"
+              aria-label="Close overlay"
+              onClick={() => setOpen(false)}
+              initial={reduced ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: duration.fast }}
+            />
+          ) : null}
+        </AnimatePresence>
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg)]/80 px-4 py-3 backdrop-blur-md lg:px-8">
+          <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] glass-nav px-4 py-3 lg:px-8">
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="rounded-lg border border-[var(--line)] p-2 lg:hidden"
+                className="rounded-lg border border-[var(--line)] bg-[var(--bg-elevated)]/80 p-2 shadow-sm transition hover:border-[var(--accent)] hover:shadow-[0_0_0_3px_rgba(31,111,84,0.12)] active:scale-95 lg:hidden"
                 onClick={() => setOpen(true)}
                 aria-label="Open menu"
               >
@@ -144,13 +170,13 @@ export function CircleShell({
             </div>
             <Link
               href="/events"
-              className="text-sm font-medium text-[var(--accent-deep)] hover:underline"
+              className="text-sm font-medium text-[var(--accent-deep)] transition hover:text-[var(--accent)] active:scale-95"
             >
               All events
             </Link>
           </header>
-          <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8 animate-fade-up">
-            {children}
+          <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
+            <PageTransition>{children}</PageTransition>
           </main>
         </div>
       </div>
