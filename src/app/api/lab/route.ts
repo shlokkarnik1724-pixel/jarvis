@@ -121,7 +121,10 @@ export async function GET(request: Request) {
         return NextResponse.json(
           ok({
             pins: listGifs(circleId),
-            results: await searchGifs(searchParams.get("q") ?? ""),
+            results: await searchGifs(
+              searchParams.get("q") ?? "",
+              searchParams.get("tag") ?? "all"
+            ),
           })
         );
       case "streaks":
@@ -345,7 +348,8 @@ export async function POST(request: Request) {
 
     if (feature === "gifs" && action === "search") {
       const q = String(body.q ?? "");
-      return NextResponse.json(ok(await searchGifs(q)));
+      const tag = String(body.tag ?? "all");
+      return NextResponse.json(ok(await searchGifs(q, tag)));
     }
 
     if (feature === "streaks" && action === "checkin") {

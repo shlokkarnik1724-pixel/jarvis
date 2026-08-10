@@ -43,37 +43,93 @@ export const TRUTH_DARE_DECK: Array<Omit<TruthDareCard, "id" | "custom">> = [
 ];
 
 export const DEMO_GIFS = [
-  {
-    id: "demo-celebrate",
-    url: "https://media.giphy.com/media/g9582DNuQVjV6/giphy.gif",
-    title: "celebration",
-  },
-  {
-    id: "demo-nod",
-    url: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
-    title: "yes",
-  },
-  {
-    id: "demo-chaos",
-    url: "https://media.giphy.com/media/3o7aCTPPm4OHgjwD8Y/giphy.gif",
-    title: "chaos",
-  },
-  {
-    id: "demo-sip",
-    url: "https://media.giphy.com/media/3oEduSbSGpGaRX2Vri/giphy.gif",
-    title: "sip",
-  },
-  {
-    id: "demo-sleep",
-    url: "https://media.giphy.com/media/fAnEC88LkhDkeqqMgI/giphy.gif",
-    title: "exhausted",
-  },
-  {
-    id: "demo-fire",
-    url: "https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif",
-    title: "fire",
-  },
-];
+  // Party / cheers
+  { id: "adult-cheers", url: "https://media.giphy.com/media/g9582DNuQVjV6/giphy.gif", title: "cheers we made it", tags: ["party", "cheers"] },
+  { id: "adult-pour", url: "https://media.giphy.com/media/3oEduSbSGpGaRX2Vri/giphy.gif", title: "keep pouring", tags: ["party", "drinks"] },
+  { id: "adult-shot", url: "https://media.giphy.com/media/l0MYC0LajbaPoEA2k/giphy.gif", title: "shot o'clock", tags: ["party", "drinks"] },
+  { id: "adult-dance", url: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", title: "main character dance", tags: ["party", "dance"] },
+  { id: "adult-disco", url: "https://media.giphy.com/media/3o7TKMoy3ZQ8SnY2cM/giphy.gif", title: "disco mode unlocked", tags: ["party", "dance"] },
+  { id: "adult-crowd", url: "https://media.giphy.com/media/l0MYwONBGDcdVu8mA/giphy.gif", title: "the night is young", tags: ["party"] },
+  { id: "adult-toast", url: "https://media.giphy.com/media/26tPplGWjN0xLybiU/giphy.gif", title: "group toast energy", tags: ["party", "cheers"] },
+  { id: "adult-club", url: "https://media.giphy.com/media/3oriO7A7bt1wgFzBhK/giphy.gif", title: "club kid chaos", tags: ["party", "dance"] },
+
+  // Drunk / tipsy comedy
+  { id: "adult-wobble", url: "https://media.giphy.com/media/3o7aCTPPm4OHgjwD8Y/giphy.gif", title: "tipsy wobble", tags: ["drunk", "chaos"] },
+  { id: "adult-spill", url: "https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif", title: "i meant to do that", tags: ["drunk", "chaos"] },
+  { id: "adult-blur", url: "https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif", title: "vision: 480p", tags: ["drunk"] },
+  { id: "adult-slur", url: "https://media.giphy.com/media/3o6Zt8zb1Pp2p4kq5a/giphy.gif", title: "i'm fine (lying)", tags: ["drunk"] },
+  { id: "adult-oops", url: "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif", title: "bad decision incoming", tags: ["drunk", "chaos"] },
+  { id: "adult-spin", url: "https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif", title: "room is spinning", tags: ["drunk", "hangover"] },
+  { id: "adult-laugh", url: "https://media.giphy.com/media/5VYbHYIu3HwmI/giphy.gif", title: "unhinged laughter", tags: ["drunk", "chaos"] },
+  { id: "adult-point", url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif", title: "that's so you", tags: ["drunk", "roast"] },
+
+  // Hangover / morning after
+  { id: "adult-dead", url: "https://media.giphy.com/media/fAnEC88LkhDkeqqMgI/giphy.gif", title: "emotionally offline", tags: ["hangover"] },
+  { id: "adult-headache", url: "https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif", title: "brain on fire", tags: ["hangover"] },
+  { id: "adult-bed", url: "https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif", title: "never leaving bed", tags: ["hangover"] },
+  { id: "adult-coffee", url: "https://media.giphy.com/media/3o6Zt6ML6BklcajjsA/giphy.gif", title: "coffee IV drip", tags: ["hangover"] },
+  { id: "adult-regret", url: "https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.gif", title: "why did i say that", tags: ["hangover", "cringe"] },
+  { id: "adult-walk", url: "https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif", title: "walk of mild shame", tags: ["hangover"] },
+  { id: "adult-sun", url: "https://media.giphy.com/media/xUA7aM09ByyR1Q5KGM/giphy.gif", title: "sunlight is illegal", tags: ["hangover"] },
+  { id: "adult-water", url: "https://media.giphy.com/media/3orieXHZX2Eb5mq1YI/giphy.gif", title: "hydrate or die-drate", tags: ["hangover"] },
+
+  // Flirty / dating-app adult humor (PG-13)
+  { id: "adult-wink", url: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif", title: "subtle (not subtle)", tags: ["flirty"] },
+  { id: "adult-heart", url: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", title: "down bad detected", tags: ["flirty"] },
+  { id: "adult-blush", url: "https://media.giphy.com/media/3o7TKQwP4hG5m2kY5W/giphy.gif", title: "caught catching feelings", tags: ["flirty"] },
+  { id: "adult-text", url: "https://media.giphy.com/media/3o6ZsYm5q2m0Qkq0gE/giphy.gif", title: "left on read energy", tags: ["flirty", "cringe"] },
+  { id: "adult-smooth", url: "https://media.giphy.com/media/l0HlNQ03J5JxX6lva/giphy.gif", title: "thought i was smooth", tags: ["flirty", "cringe"] },
+  { id: "adult-kiss", url: "https://media.giphy.com/media/l0MYwONBGDcdVu8mA/giphy.gif", title: "mwah from across the bar", tags: ["flirty"] },
+
+  // Roasts / group chat energy
+  { id: "adult-sideeye", url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif", title: "industrial strength side-eye", tags: ["roast"] },
+  { id: "adult-nope", url: "https://media.giphy.com/media/3ohzdIuqJoo8QdKlnW/giphy.gif", title: "absolutely not", tags: ["roast"] },
+  { id: "adult-liar", url: "https://media.giphy.com/media/3o6Zt8zb1Pp2p4kq5a/giphy.gif", title: "and i oop — liar", tags: ["roast"] },
+  { id: "adult-judge", url: "https://media.giphy.com/media/xT0GqssRwiIIiNxOQE/giphy.gif", title: "judging silently", tags: ["roast"] },
+  { id: "adult-cap", url: "https://media.giphy.com/media/3o7TKMoy3ZQ8SnY2cM/giphy.gif", title: "that's cap", tags: ["roast"] },
+  { id: "adult-receipts", url: "https://media.giphy.com/media/26tPoyNh1xqQzq2kq/giphy.gif", title: "i have receipts", tags: ["roast"] },
+
+  // Chaos / unhinged
+  { id: "adult-feral", url: "https://media.giphy.com/media/3oEduPPmzXoF6qG5Tq/giphy.gif", title: "feral mode", tags: ["chaos"] },
+  { id: "adult-scream", url: "https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif", title: "internal screaming", tags: ["chaos"] },
+  { id: "adult-run", url: "https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif", title: "exit the chat", tags: ["chaos"] },
+  { id: "adult-explode", url: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif", title: "brain go boom", tags: ["chaos"] },
+  { id: "adult-plot", url: "https://media.giphy.com/media/3oriO7A7bt1wgFzBhK/giphy.gif", title: "plot twist nobody asked for", tags: ["chaos"] },
+  { id: "adult-villain", url: "https://media.giphy.com/media/xUA7aM09ByyR1Q5KGM/giphy.gif", title: "villain origin story", tags: ["chaos"] },
+
+  // Adulting fails
+  { id: "adult-bills", url: "https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.gif", title: "adulting declined", tags: ["adulting"] },
+  { id: "adult-broke", url: "https://media.giphy.com/media/3orieXHZX2Eb5mq1YI/giphy.gif", title: "wallet empty soul emptier", tags: ["adulting"] },
+  { id: "adult-monday", url: "https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif", title: "monday after the weekend", tags: ["adulting", "hangover"] },
+  { id: "adult-tax", url: "https://media.giphy.com/media/l0HlNQ03J5JxX6lva/giphy.gif", title: "taxes? in this economy?", tags: ["adulting"] },
+  { id: "adult-nap", url: "https://media.giphy.com/media/3o6Zt6ML6BklcajjsA/giphy.gif", title: "power nap propaganda", tags: ["adulting"] },
+  { id: "adult-late", url: "https://media.giphy.com/media/3o6ZsYm5q2m0Qkq0gE/giphy.gif", title: "fashionably next-day", tags: ["adulting"] },
+] as const;
+
+export type DemoGif = (typeof DEMO_GIFS)[number];
+
+export const GIF_PACK_FILTERS = [
+  { id: "all", label: "All funny" },
+  { id: "party", label: "Party" },
+  { id: "drunk", label: "Tipsy" },
+  { id: "hangover", label: "Hangover" },
+  { id: "flirty", label: "Flirty" },
+  { id: "roast", label: "Roasts" },
+  { id: "chaos", label: "Unhinged" },
+  { id: "adulting", label: "Adulting" },
+] as const;
+
+export function filterFunnyGifs(query: string, tag = "all"): DemoGif[] {
+  const q = query.trim().toLowerCase();
+  return DEMO_GIFS.filter((gif) => {
+    const tagOk =
+      tag === "all" || (gif.tags as readonly string[]).includes(tag);
+    if (!tagOk) return false;
+    if (!q) return true;
+    const haystack = [gif.title, gif.id, ...gif.tags].join(" ").toLowerCase();
+    return haystack.includes(q);
+  });
+}
 
 /** Ensure snack/gif/streak fields exist on older in-memory states. */
 export function ensureExtraState(circleId: string) {
@@ -92,7 +148,11 @@ export function ensureExtraState(circleId: string) {
     }));
   }
   if (!state.gifs) {
-    state.gifs = DEMO_GIFS.slice(0, 3).map((gif) => ({
+    state.gifs = DEMO_GIFS.filter((gif) =>
+      ["adult-cheers", "adult-wobble", "adult-dead", "adult-sideeye", "adult-feral", "adult-shot"].includes(
+        gif.id
+      )
+    ).map((gif) => ({
       id: randomUUID(),
       circleId,
       url: gif.url,
@@ -282,33 +342,47 @@ export function computeSuperlatives(circleId: string): SuperlativeView[] {
   ].filter((item): item is SuperlativeView => Boolean(item));
 }
 
-export async function searchGifs(query: string): Promise<
-  Array<{ id: string; url: string; title: string }>
-> {
+export async function searchGifs(
+  query: string,
+  tag = "all"
+): Promise<Array<{ id: string; url: string; title: string; tags?: string[] }>> {
+  const pack = filterFunnyGifs(query, tag).map((gif) => ({
+    id: gif.id,
+    url: gif.url,
+    title: gif.title,
+    tags: [...gif.tags],
+  }));
+
   const key = process.env.NEXT_PUBLIC_GIPHY_KEY;
   if (!key) {
-    const q = query.trim().toLowerCase();
-    return DEMO_GIFS.filter(
-      (gif) => !q || gif.title.includes(q) || gif.id.includes(q)
-    );
+    return pack;
   }
 
-  const res = await fetch(
-    `https://api.giphy.com/v1/gifs/search?api_key=${key}&q=${encodeURIComponent(query || "friends")}&limit=12&rating=pg-13`
-  );
-  if (!res.ok) {
-    return DEMO_GIFS;
+  const searchTerm =
+    query.trim() ||
+    (tag !== "all" ? `${tag} funny reaction` : "funny drunk party reaction");
+
+  try {
+    const res = await fetch(
+      `https://api.giphy.com/v1/gifs/search?api_key=${key}&q=${encodeURIComponent(searchTerm)}&limit=24&rating=pg-13`
+    );
+    if (!res.ok) return pack;
+    const json = (await res.json()) as {
+      data: Array<{
+        id: string;
+        title: string;
+        images: { fixed_height: { url: string } };
+      }>;
+    };
+    const remote = json.data.map((gif) => ({
+      id: gif.id,
+      url: gif.images.fixed_height.url,
+      title: gif.title || "gif",
+    }));
+    // Curated funny pack first, then GIPHY hits.
+    const seen = new Set<string>(pack.map((g) => g.url));
+    return [...pack, ...remote.filter((g) => !seen.has(g.url))];
+  } catch {
+    return pack;
   }
-  const json = (await res.json()) as {
-    data: Array<{
-      id: string;
-      title: string;
-      images: { fixed_height: { url: string } };
-    }>;
-  };
-  return json.data.map((gif) => ({
-    id: gif.id,
-    url: gif.images.fixed_height.url,
-    title: gif.title || "gif",
-  }));
 }
